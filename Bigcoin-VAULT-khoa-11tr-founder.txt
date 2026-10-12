@@ -1,0 +1,69 @@
+======================================================================
+   BIGCOIN-VAULT - KHOA 11tr FOUNDER ON-CHAIN (minh bach, verify duoc)
+   Tac gia: Phu  |  D:\BitcoinCore\Bigcoin-BGC\  |  dung engine bigcoin_pq.py
+======================================================================
+
+Y TUONG: giau TEN khong tao niem tin, vi quyen kiem soat (11tr + PoA) nam cong
+khai tren chuoi - ai audit cung thay. Giai phap DUNG de cong dong tin: KHOA 11tr
+cua founder bang TIMELOCK DONG THUAN. Node tu choi moi giao dich tieu coin khoa
+truoc chieu cao mo khoa. Ai cung doc 'lock_until' tren chuoi -> tu kiem "founder
+khong the ban thao som". Cam ket bang CODE, bat bien, thay cho loi hua.
+
+KET QUA CHAY (da kiem chung):
+  - Genesis: 11tr founder khoa toi khoi mo khoa; 10tr AI thanh khoan. Tong = 21tr.
+  - Founder thu ban thao som -> CHAN ("COIN DANG KHOA toi khoi X"), ke ca ep tieu
+    thang UTXO khoa cung bi tu choi. DU LA FOUNDER van khong ban duoc som.
+  - Sau moc mo khoa -> founder tieu binh thuong.
+  - Node moi doc genesis thay ro lock_until -> khong can tin loi founder.
+
+LUU Y:
+  1. Nen vesting CA mot phan 10tr quy AI (tranh xa hang loat lam sap gia).
+  2. Timelock bat bien: khoa roi khong rut som duoc ke ca khi can -> chon moc ky truoc.
+  3. Ket hop: khoa coin + but danh (hop phap) + whitepaper trung thuc = ra mat dang tin.
+
+----------------------------------------------------------------------
+   KET XUAT CHAY THAT (python3 bigcoin_vault.py):
+----------------------------------------------------------------------
+==============================================================================
+ BIGCOIN-VAULT - khoa 11tr founder on-chain de cong dong TU KIEM (minh bach)
+==============================================================================
+
+[1] GENESIS: 11tr founder KHOA toi khoi 10 | 10tr AI thanh khoan (van hanh):
+    genesis: OK  | tong=21,000,000 (=21tr? True)
+    founder: khoa 11,000,000 | tieu duoc 0
+    AI     : tieu duoc 10,000,000
+    => CONG DONG DOC tren chuoi: 11tr cua founder co 'lock_until=10'. Bat bien.
+
+[2] AI van hanh binh thuong (10tr thanh khoan): AI -> Alice 100 BGC
+    Alice=100  AI tieu duoc=9,999,900
+
+[3] FOUNDER THU BAN THAO 11tr SOM (khoi 2 < 10):
+    vi khong cho chon duoc coin khoa -> CHAN ngay o tao giao dich: khong du BGC da mo khoa
+    ep tieu thang UTXO khoa -> CHAN: COIN DANG KHOA toi khoi 10 (hien 2)
+    => Du la FOUNDER, du co KHOA, van KHONG ban duoc truoc khoi 10. Code ep buoc.
+
+[4] CHO TOI MOC MO KHOA (dao 8 khoi rong):
+    chieu cao hien tai = 10 (>= 10) -> 11tr da mo khoa
+    founder tieu duoc bay gio: 11,000,000 BGC
+    founder phan phoi 500 BGC (sau mo khoa) -> OK
+
+[5] CONG DONG TU KIEM (node moi doc cam ket tu genesis):
+    genesis out[0]: 11,000,000 BGC -> BGCQ13cf9522cf8025.. lock_until=10
+    genesis out[1]: 10,000,000 BGC -> BGCQbc13ab56612bae.. lock_until=0
+    tong cung: 21,000,000 BGC (=21tr? True)
+    => Bat ky ai chay node deu THAY 11tr bi khoa toi moc do. Khong can tin loi founder.
+
+==============================================================================
+ KET LUAN & LUU Y CHO ANH
+  - Giau TEN khong tao niem tin (quyen kiem soat nam cong khai tren chuoi).
+    KHOA COIN bang code moi tao niem tin: ai cung verify founder khong ban duoc som.
+  - 11tr founder khoa toi moc mo khoa (nen dat vai nam / chia vesting nhieu dot).
+  - 10tr AI thanh khoan de VAN HANH (tra robot/dich vu) - cung nen vesting 1 phan.
+  - 21tr VAN co dinh; timelock chi quyet dinh KHI NAO tieu, khong tao/huy coin.
+  *** LUU Y ***
+  1. Nen khoa CA mot phan 10tr AI (vesting) de tranh 'quy AI' xa hang loat lam sap gia.
+  2. Timelock bat bien = con dao 2 luoi: khoa roi KHONG rut som duoc ke ca khi can.
+     Chon moc/vesting ky truoc khi phat hanh genesis (genesis khong sua duoc).
+  3. Ket hop: khoa coin (file nay) + but danh (hop phap) + whitepaper trung thuc =
+     cach ra mat dang tin, thay cho 'giau + chuyen AI tu tao' (khong ben, de bi lo).
+==============================================================================

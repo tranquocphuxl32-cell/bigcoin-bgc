@@ -1,0 +1,61 @@
+======================================================================
+   DUA BGC TOI NGUOI DUNG THUC TE - CAC BUOC NHU BITCOIN
+   Thong diep: "BGC: dong tien hau luong tu, sinh ra cho ky nguyen AI va robot."
+   Tac gia: Phu  |  D:\BitcoinCore\Bigcoin-BGC\
+======================================================================
+
+SU THAT: "dua vao thuc te" IT ve viet them code (da gan du), NHIEU ve TRIEN KHAI +
+HE SINH THAI + CONG DONG - dung nhu BTC da di tu 2009. Duoi day map lich su BTC
+sang hanh dong cu the cho BGC, kem thu DA CO trong thu muc nay.
+
+--- GIAI DOAN 1: CONG KHAI (Satoshi 2008-2009) ---
+B1. Whitepaper + MA NGUON MO len GitHub cong khai (giay phep MIT nhu Bitcoin).
+    -> Da co: toan bo code trong Bigcoin-BGC + whitepaper + file dinh vi.
+    -> Viec can lam: tao repo github.com/<ten>/bigcoin, day code len, README = thong diep.
+B2. Genesis fair-launch (khong premine) + bits/target cong bo cong khai.
+    -> Da co: bgcfl_engine (fair-launch PoW, halving). Can: dat tham so THAT truoc khi chot.
+
+--- GIAI DOAN 2: MANG SONG (2009-2010) ---
+B3. SEED NODES: 2-3 may chu VPS co IP tinh chay node 24/7 lam diem ket noi dau tien.
+    (BTC dung "DNS seeds".) Nguoi moi tro vao seed de tim mang.
+    -> Can: thue VPS (vai USD/thang), mo cong, chay run_node/bgcfl_net voi IP that.
+    -> Da co: P2P ma hoa + reconnect; chi can dat len may chu that.
+B4. DAO cong khai: bat ky ai tai code -> chay miner -> gop hashrate. Fair launch.
+    -> Da co: bgcfl_net (nhieu tho dao). Can: run_miner CLI than thien (giong run_node).
+
+--- GIAI DOAN 3: NGUOI DUNG DUNG DUOC (vi + explorer) ---
+B5. VI cho nguoi khong ky thuat: tao dia chi, xem so du, gui/nhan. (Desktop truoc, mobile sau.)
+    -> Da co: bgc_wallet (luu khoa an toan) + lenh bal/send trong run_node.
+    -> Viec can lam: dong goi thanh app 1-click (vd PyInstaller) de nguoi thuong cai dat.
+B6. BLOCK EXPLORER website: ai cung xem chuoi/so du qua URL -> minh bach + niem tin.
+    -> DA CO & CHAY: bgc_explorer_server.py (xem anh bgc_explorer_preview.html).
+    -> Viec can lam: chay tren VPS + ten mien (vd explorer.bigcoin.org).
+B7. FAUCET + tai lieu: phat 1 it BGC mien phi cho nguoi moi thu gui/nhan; huong dan cai dat.
+
+--- GIAI DOAN 4: CONG DONG & TIEN ICH (2010-2013) ---
+B8. Cong dong: forum/Discord/Telegram + docs. Nguoi dam me chay node, dao, dong gop code.
+B9. Tien ich THAT: dung escrow AI/robot (bgc_job) cho dich vu that -> gia tri tu SU DUNG.
+B10. Dich vu/merchant chap nhan BGC; cau noi vi AI-agent voi dich vu AI that.
+
+--- GIAI DOAN 5: THANH KHOAN & NIEM YET (sau, than trong) ---
+B11. Khi da phi tap trung + co thanh khoan: xin niem yet san (san tu tham dinh phap ly).
+     -> CAN luat su truoc. Luc dau nen Reg S/geoblock US (xem file phap ly da luu).
+
+=== CHI PHI & HA TANG THUC TE (noi thang) ===
+  - VPS seed/explorer: vai chuc USD/thang. Ten mien: ~10 USD/nam.
+  - Thoi gian van hanh + ho tro cong dong: dang ke, lien tuc.
+  - Bao mat: code hoc tap nay CHUA qua kiem toan doc lap -> TRUOC khi co gia tri that,
+    phai thue audit + kiem thu tai cao. Dung de tien that trso vao code chua audit.
+  - Phap ly: giu thong diep trung thuc (khong hua loi nhuan); hoi luat su truoc khi
+    cham toi nguoi My; VN cung co quy dinh rieng ve tai san ao - nen tim hieu.
+
+=== THU DA SAN SANG vs CAN LAM ===
+  SAN: node, P2P ma hoa, fair-launch PoW (retarget/maturity/chainwork), vi khang luong tu,
+       explorer web (chay that), escrow AI/robot, finality/liveness (ban PoA), huong dan lien may.
+  CAN: dat tham so mainnet that + chot genesis; VPS seed nodes + ten mien; dong goi vi 1-click;
+       run_miner CLI; faucet; cong dong + docs; AUDIT bao mat; luat su.
+
+CHAY THU EXPLORER NGAY:
+  python bgc_explorer_server.py bgcfl_data 8800
+  -> mo http://127.0.0.1:8800 (lien may: IP may chu). Anh xem anh bgc_explorer_preview.html.
+======================================================================

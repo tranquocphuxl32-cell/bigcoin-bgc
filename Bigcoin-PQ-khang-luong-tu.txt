@@ -1,0 +1,103 @@
+======================================================================
+   BIGCOIN-PQ (BGC KHANG LUONG TU) - chu ky hash-based XMSS
+   Tac gia: Phu  |  D:\BitcoinCore\Bigcoin-BGC\  |  FILE DOC LAP (chi dung SHA-256)
+======================================================================
+
+VI SAO CAN KHANG LUONG TU
+  BGC ban dau (bigcoin.py) ky bang Schnorr tren secp256k1 - giong BTC. Thuat toan
+  SHOR tren may luong tu du lon se SUY RA KHOA RIENG tu khoa cong (pha log roi rac).
+  Moi dia chi da TIEU 1 lan (lo khoa cong) se bi lay sach. Day la rui ro that cua
+  BTC va moi coin dung ECDSA/Schnorr trong tuong lai.
+
+LA CHAN: CHU KY DUA VAO HAM BAM (HASH-BASED)
+  Ham bam SHA-256 la MOT CHIEU; may luong tu KHONG dao nguoc duoc no:
+    - SHOR: chi pha duoc bai toan log roi rac (ECDSA/RSA) -> VO DUNG voi hash.
+    - GROVER: chi tang toc tim tien anh x2 (256 bit -> 128 bit) -> van an toan.
+  Nen neu chu ky CHI dua vao SHA-256, coin khang duoc luong tu. Day la huong
+  NIST da chuan hoa (SP 800-208: XMSS/LMS; va SPHINCS+ khong trang thai).
+
+CACH DUNG TRONG BGC-PQ (tu viet, chay that)
+  1. WOTS+ (Winternitz One-Time Signature): chu ky MOT LAN, chi gom cac chuoi bam
+     SHA-256. Khoa cong = dinh cac chuoi; chu ky = diem giua chuoi; nguoi kiem bam
+     tiep len dinh roi so sanh. An toan = khong dao nguoc duoc chuoi bam.
+  2. XMSS: 1 dia chi = GOC CAY MERKLE cua 2^h khoa WOTS (demo h=4 -> ky 16 lan,
+     founder h=6 -> 64 lan). Ky lan thu k: dung khoa WOTS thu k + duong Merkle.
+     Kiem: tai tao khoa WOTS tu chu ky -> bam thanh la -> di len goc -> so dia chi.
+  => DIA CHI LA 1 HASH 32 BYTE. KHONG he co "khoa cong EC" nao lo ra bao gio.
+
+GIU NGUYEN KINH TE BGC
+  21,000,000 CO DINH | genesis 11tr founder + 10tr AI | PoA (authority ky khoi,
+  cung bang XMSS) | memo on-chain cho kinh te AI<->nguoi. Chi THAY chu ky.
+
+KET QUA CHAY (da kiem chung):
+  - Genesis = 21tr; phan phoi; Alice tra AI 5 BGC + memo; tong luon = 21tr.
+  - Chong gian lan (ky PQ): tu in tien (out>in) CHAN; bop meo chu ky CHAN; ky
+    UTXO nguoi khac CHAN.
+  - Node moi tu xac minh lai ca chuoi bang chu ky PQ -> 21tr, tat ca hop le.
+
+DANH DOI THAT (phai biet)
+  - Chu ky LON hon nhieu (WOTS ~ hang KB, so voi 64 byte Schnorr) -> khoi nang hon.
+  - ONE-TIME + STATEFUL: moi leaf XMSS chi ky 1 LAN. Ky 2 lan tren cung leaf ->
+    lo du mau -> CO THE gia mao. Vi phai DEM chi so leaf (file tu quan ly 'next');
+    het 2^h lan thi can dia chi moi.
+  - Muon ky vo han lan ma khong can giu trang thai: dung SPHINCS+ (cung hash-based,
+    chu ky to hon nhung khong trang thai) - huong nang cap tiep theo.
+
+LIEN HE HANH TRINH CUA ANH
+  Day la ung dung TRUC TIEP cua quantum_exposure.py (do phoi nhiem) + hieu biet ve
+  Schnorr/secp256k1: anh khong chi DO rui ro luong tu, gio anh XAY coin MIEN NHIEM.
+
+CACH CHAY (doc lap, khong can file nao khac):
+  python3 bigcoin_pq.py
+
+----------------------------------------------------------------------
+   KET XUAT CHAY THAT (python3 bigcoin_pq.py):
+----------------------------------------------------------------------
+============================================================================
+ BIGCOIN-PQ (BGC khang luong tu) - chu ky hash-based XMSS, chi SHA-256, DOC LAP
+============================================================================
+
+[1] KHOA KHANG LUONG TU (XMSS, h=4 -> moi dia chi ky duoc 16 lan):
+    tao 4 vi XMSS xong trong 0.1s
+    Founder: BGCQ5b00ffc49e0fe4e2239f29a5..  (h=6 -> ky 64 khoi)
+    AI     : BGCQ1ea7549ce7f457d2bc4c6859..
+    DIA CHI = GOC CAY MERKLE (1 hash 32 byte). KHONG he co 'khoa cong EC' nao lo ra.
+
+[2] GENESIS 21tr (premine): OK
+    founder=11,000,000  AI=10,000,000  TONG=21,000,000 (=21tr? True)
+
+[3] Phan phoi: Alice=100 Bob=50  (ky bang XMSS, xac minh OK)
+
+[4] Nguoi nho AI (giao dich khang luong tu): Alice->AI 5 BGC + memo on-chain
+    AI treasury=10,000,005 BGC
+
+[5] CONG DONG TU KIEM CHUNG: tong cung sau 4 khoi = 21,000,000 BGC (=21tr? True)
+
+[6] KIEM CHUNG KHANG LUONG TU - vi sao Shor vo dung:
+    - Dia chi = goc Merkle (hash). De 'suy khoa rieng' can DAO NGUOC SHA-256.
+    - Shor pha duoc log roi rac (ECDSA) nhung KHONG dao nguoc duoc ham bam.
+    - Grover chi tang toc tim tien anh x2 (256 bit -> 128 bit) -> van ngoai tam.
+    vi du: 1 leaf = c1f1e02231e367709ceb7951.. ; tim tien anh can ~2^128 phep bam -> vo vong.
+
+[7] CHONG GIAN LAN (nhu BGC thuong, nhung chu ky PQ):
+    (a) tu in 1,000,000 BGC (ky PQ hop le, out>in) -> CHAN: tao coin tu khong khi (out>in)
+    (b) bop meo chu ky XMSS -> CHAN: chu ky XMSS sai
+    (c) Bob ky UTXO cua Alice -> CHAN: owner khong khop
+
+[8] CANH BAO QUAN TRONG (one-time): moi leaf XMSS chi ky 1 LAN.
+    Ky 2 thong diep khac nhau tren CUNG 1 leaf -> lo du mau chuoi -> co the gia mao.
+    Vi the vi PHAI tang chi so leaf moi lan ky (stateful). File tu quan ly 'next'.
+    Founder da ky 6/64 lan; het thi can dia chi moi (hoac h lon/ SPHINCS+ khong trang thai).
+
+[9] NODE MOI tu xac minh lai tu genesis (chu ky PQ):
+    4 khoi: TAT CA HOP LE; tong=21,000,000 (=21tr? True)
+
+============================================================================
+ KET LUAN
+  - BGC-PQ: y het BGC (21tr co dinh, 11tr/10tr, PoA, memo AI) nhung chu ky HASH-BASED.
+  - Dia chi = goc Merkle; chu ky = WOTS+ mot lan + duong Merkle (XMSS, chuan NIST).
+  - An toan chi dua vao SHA-256 mot chieu -> SHOR (may luong tu) VO DUNG; Grover chi x2.
+  - Danh doi: chu ky to hon (hang KB) va MOI LAN KY 1 LEAF (stateful, phai dem chi so).
+  - File CHI dung hashlib -> DOC LAP, khong can secp256k1/btclib.
+  - Thuc te muon ky vo han lan khong trang thai: dung SPHINCS+ (cung hash-based, NIST).
+============================================================================

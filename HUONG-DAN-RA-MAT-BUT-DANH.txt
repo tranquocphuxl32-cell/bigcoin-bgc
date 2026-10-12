@@ -1,0 +1,41 @@
+======================================================================
+   HUONG DAN RA MAT BGC DUOI BUT DANH (hop phap, kieu Satoshi)
+   Cho Phu  |  D:\BitcoinCore\Bigcoin-BGC\
+======================================================================
+
+MUC TIEU: bao ve RIENG TU danh tinh that cua anh mot cach HOP PHAP - khong phai
+de lua ai, ma de tach cuoc song/su nghiep ca nhan khoi du an cong khai. Satoshi
+lam duoc dieu nay va chua bao gio lo. QUAN TRONG: but danh KHAC voi "giau quyen
+kiem soat" - quyen kiem soat (11tr, PoA) van phai cong khai & minh bach (whitepaper).
+
+NGUYEN TAC CHUNG
+  1. TACH BACH TUYET DOI danh tinh "founder BGC" khoi danh tinh that:
+     - Email/tai khoan rieng, KHONG dung ten that, KHONG dung email ca nhan/cong ty.
+     - Khong dung so dien thoai that, khong dung tai khoan mang xa hoi ca nhan.
+     - Khong dang tu may/mang gan voi danh tinh that (vd wifi cong ty, IP nha).
+  2. KHONG RO RI SIEU DU LIEU (metadata):
+     - File cong bo (whitepaper, code): xoa metadata tac gia (author, device).
+     - Commit git: dung ten/email but danh; dat lai user.name/user.email cho repo do.
+     - Mui gio, ngon ngu he thong, font... co the lo vung mien - can nhat quan but danh.
+  3. VAN PHONG & THOI QUEN VIET:
+     - Giong van, loi chinh ta dac trung co the bi phan tich -> giu nhat quan, trung tinh.
+  4. HA TANG:
+     - May/vi rieng cho du an; khong tron lan voi vi/tai san ca nhan.
+     - Can nhac Tor/VPN khi van hanh node cong khai (che IP - KHAC voi che quyen kiem soat).
+  5. TAI CHINH:
+     - Vi founder (11tr) tach hoan toan khoi tai san ca nhan; khong chuyen qua lai lam lo lien ket.
+
+GIOI HAN THANH THAT (phai biet)
+  - But danh KHONG = tang hinh. Phan tich chuoi + loi metadata + 1 lan bat can co the lo.
+    Satoshi giu duoc vi CUC ky ky luat suot nhieu nam. Rui ro lo luon ton tai.
+  - But danh KHONG xoa duoc TRACH NHIEM PHAP LY: neu du an vi pham phap luat (lua dao,
+    chung khoan trai phep), an danh khong bao ve anh - va dung co lam gi can an danh de tron.
+  - Muc dich dung cua but danh o day: RIENG TU (privacy), KHONG phai de danh lac huong
+    nguoi mua ve ai kiem soat coin. Quyen kiem soat phai minh bach (xem whitepaper muc 3, 6).
+
+KET HOP DUNG DAN (cach ra mat dang tin)
+  BUT DANH (rieng tu danh tinh)  +  KHOA COIN on-chain (bigcoin_vault.py)  +
+  WHITEPAPER TRUNG THUC (cong bo premine/PoA)  =  vua bao ve rieng tu, vua dang tin.
+  Nguoc lai: "giau founder + dung chuyen AI tu tao de khong ai biet ai kiem soat" =
+  lua nguoi mua, khong ben (lo ngay khi co nguoi audit chuoi), va co the pham phap.
+======================================================================

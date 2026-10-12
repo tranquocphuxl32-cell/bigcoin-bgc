@@ -1,0 +1,96 @@
+============================================================================
+ HUONG DAN DAO BGC - DE NHU BITCOIN, AI CUNG DAO DUOC
+ "BGC: dong tien hau luong tu, sinh ra cho ky nguyen AI va robot."
+============================================================================
+
+BGC dao GIONG BITCOIN nhung MANH HON:
+  - Fair-launch, KHONG premine: moi coin deu do DAO ra (bang chung cong viec PoW).
+  - Ai cung dao duoc, khong xin phep ai (permissionless) - cam may vao la dao.
+  - Co halving (phan thuong giam mot nua dinh ky) + tu dieu chinh do kho +
+    coinbase maturity + chon nhanh dai nhat theo chainwork (y het Bitcoin).
+  - KHAC BTC: chu ky HASH-BASED (XMSS) => KHANG MAY TINH LUONG TU.
+  - KHAC BTC: moi ket noi giua cac may deu MA HOA dau-cuoi.
+
+----------------------------------------------------------------------------
+ CAN GI
+----------------------------------------------------------------------------
+  - Python 3 (3.9 tro len). Khong can cai them thu vien nao (chi dung thu vien
+    chuan cua Python: hashlib, socket...). Chay duoc tren Windows / Mac / Linux.
+  - Cac file trong thu muc nay:
+        run_miner.py        <- chuong trinh dao (chay cai nay)
+        bgcfl_engine.py     <- loi chuoi (PoW, halving, retarget, chainwork)
+        bgcfl_wallet.py     <- vi khang luong tu (tu tao khi chay)
+        bgcfl_genesis.py    <- tao khoi so 0 chuan
+        bgcfl_genesis.json  <- khoi so 0 CHUNG cho moi may (bat buoc giong nhau)
+        bigcoin_pq.py       <- chu ky khang luong tu (XMSS)
+        bgc_secure.py       <- kenh P2P ma hoa
+
+----------------------------------------------------------------------------
+ 3 BUOC DE DAO
+----------------------------------------------------------------------------
+ 1) Mo cua so lenh (CMD / PowerShell / Terminal), vao thu muc nay.
+
+ 2) Dao SOLO (thu mot minh, hieu cach chay):
+        python run_miner.py
+    -> Tu tao vi (my_bgc_wallet.json), nap genesis, bat dau dao vao vi cua ban.
+    -> Man hinh hien "DAO DUOC khoi #...". Go lenh 'bal' de xem so du.
+
+ 3) Tham gia MANG (dao cung nguoi khac) - chi can them seed:
+        python run_miner.py --peers IP_MAY_SEED:9333
+    Vi du nhieu seed:
+        python run_miner.py --name An --port 9333 --peers 1.2.3.4:9333,5.6.7.8:9333
+    -> May tu noi seed, tai chuoi ve, roi dao tiep. Khoi ban dao se lan ra ca mang.
+
+----------------------------------------------------------------------------
+ LENH GO TRONG LUC DAO
+----------------------------------------------------------------------------
+    bal                         xem so du (va so "tieu duoc" - coin vua dao phai
+                                cho vai khoi moi truong thanh, giong BTC)
+    addr                        xem dia chi vi cua ban (dua cho nguoi khac de nhan BGC)
+    send <dia_chi> <so_BGC> [ghi_chu]   gui BGC cho nguoi khac (ky khang luong tu)
+    peers                       xem so may dang ket noi + chainwork
+    stop                        tam dung dao (van dong bo chuoi)
+    mine                        dao lai
+    quit                        thoat
+
+----------------------------------------------------------------------------
+ CAC THAM SO (tuy chon)
+----------------------------------------------------------------------------
+    --name TEN          ten tho dao (ghi vao khoi; mac dinh = ten may)
+    --port 9333         cong lang nghe (mo cong nay tren router/firewall neu
+                        muon may khac tren Internet noi toi)
+    --peers a:9333,b:9333   danh sach seed de tham gia mang
+    --datadir THU_MUC   noi luu chuoi (mac dinh: bgcfl_data/)
+    --wallet FILE       file vi (mac dinh: my_bgc_wallet.json)
+    --no-mine           chi dong bo, khong dao (node quan sat)
+
+----------------------------------------------------------------------------
+ CHAY GIUA NHIEU MAY THAT (LAN / Internet)
+----------------------------------------------------------------------------
+  - TAT CA may phai dung CHINH mot file bgcfl_genesis.json (copy y nguyen).
+    (Neu khac genesis -> khac mang, khong hoi tu duoc.)
+  - May lam "seed" chi can mo cong 9333 va chay run_miner.py binh thuong.
+  - Cac may khac tro toi IP cua seed bang --peers.
+  - Trong LAN: dung IP noi bo (192.168.x.x). Qua Internet: dung IP cong khai +
+    mo/forward cong 9333 tren router.
+
+----------------------------------------------------------------------------
+ XEM MANG QUA TRINH DUYET (explorer)
+----------------------------------------------------------------------------
+    python bgc_explorer_server.py bgcfl_data 8800
+    -> Mo http://localhost:8800 de xem chieu cao, tong cung, khoi moi nhat,
+       vi nhieu BGC nhat. Nguoi khac xem bang http://IP_MAY:8800
+
+----------------------------------------------------------------------------
+ LUU Y QUAN TRONG
+----------------------------------------------------------------------------
+  - GIU KY file vi (my_bgc_wallet.json). Mat file = mat coin. Khong ai khoi phuc duoc.
+  - Vi XMSS co SO CHU KY HUU HAN (mac dinh 4096 moi vi). Go 'addr' de xem con
+    bao nhieu. Gan het thi tao vi moi (file moi) va chuyen coin qua.
+  - Day la BAN NGUYEN MAU tu hoc/trinh dien, CHUA kiem toan an ninh chuyen nghiep.
+    Do kho/thoi gian khoi dang dat nho cho demo; len mang that can chinh tham so
+    (BLOCK_INTERVAL, do kho ban dau, MATURITY) va kiem toan truoc khi dung tien that.
+  - BGC khang luong tu that o lop CHU KY (XMSS). Tuy nhien, mot mang that con can:
+    nhieu seed on dinh, bao ve chong tan cong 51%, va cong dong tho dao du lon.
+
+============================================================================

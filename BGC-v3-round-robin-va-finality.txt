@@ -1,0 +1,84 @@
+======================================================================
+   BGC v3 - 3 NODE + ROUND-ROBIN PoA (nhieu authority) + FINALITY
+   Tac gia: Phu  |  D:\BitcoinCore\Bigcoin-BGC\
+======================================================================
+
+HAI NANG CAP de khong ai mot minh viet lai lich su:
+
+1. ROUND-ROBIN PoA (nhieu authority luan phien) - bgc_engine.py
+   - Khoi o chi so i BAT BUOC do authority[i % N] ky (N = so authority).
+   - 1 authority KHONG the mot minh dao chuoi dai: can khoa cua CA NHOM de ky
+     cac chi so xen ke -> giam doc quyen & kha nang kiem duyet cua 1 ben.
+   - Node authority chi dao KHI DEN LUOT (Node.my_turn()).
+
+2. FINALITY (chot do sau reorg) - bgc_engine.py (FINALITY=6)
+   - Khoi cach tip >= FINALITY duoc COI NHU CHOT. Nhanh canh tranh fork SAU diem
+     chot -> BI TU CHOI du dai hon va ky dung round-robin.
+   - Chong "viet lai lich su": lich su cu khong the bi dao.
+   - Reorg NONG (trong vung chua chot) van hoat dong binh thuong.
+
+KET QUA CHAY (bgc_demo3.py - TAT CA PASS):
+  - 3 node: A & B la authority luan phien, C chi QUAN SAT -> ca 3 HOI TU cung chuoi.
+  - Doc chuoi da hoi tu: moi khoi do dung authority[i%2] ky, A&B xen ke.
+  - Finality: fork do sau 2 (<6) -> reorg OK; fork SAU diem chot (>6, dai hon nhieu)
+    -> BI TU CHOI (tip khong doi). 21tr giu nguyen suot.
+
+LUU Y QUAN TRONG CHO ANH:
+  1. Round-robin can them co che "bo luot" khi 1 authority offline (liveness) - chua co.
+     Neu authority den luot ma chet, chuoi se ket cho toi khi co co che timeout/skip.
+  2. Nhieu authority = tin cay PHAN TAN HON 1 nguoi, nhung VAN la "federation" (tap
+     cho phep co dinh), CHUA phai phi tap trung mo nhu PoW/PoS cua BTC. Muon mo thuc su
+     can doi co che dong thuan (vd PoS) - huong dai han.
+  3. FINALITY=6 la vi du; chon theo nhu cau (cao hon = an toan hon truoc reorg, nhung
+     cham "chung thuc cuoi cung" hon).
+
+FILE:
+  bgc_engine.py (v3) - round-robin expected_auth() + finality trong fork-choice
+  bgc_node.py   (v3) - Node.my_turn(), mine() theo luot
+  bgc_demo3.py  (moi) - demo 3 node + round-robin + finality
+
+CHAY: cd D:\BitcoinCore\Bigcoin-BGC & python bgc_demo3.py
+
+----------------------------------------------------------------------
+   KET XUAT bgc_demo3.py:
+----------------------------------------------------------------------
+============================================================================
+ BGC DEMO 3 - 3 node + ROUND-ROBIN PoA (2 authority luan phien) + FINALITY
+============================================================================
+
+[1] 2 AUTHORITY luan phien (round-robin). Thu tu: #0=55b416e24c5f.. #1=dcaf25ae4460..
+[2] Node A(auth) B(auth) C(quan sat) da noi P2P ma hoa.
+
+[3] GENESIS do authority 'A' ky (den luot index 0): True
+[4] Dao 7 khoi, nguoi ky luan phien: ['B', None, None, None, 'A', 'B', None]
+    (thay A,B xen ke -> round-robin; khong ai ky 2 khoi lien tiep)
+
+[5] CA 3 NODE HOI TU:
+    A: height=4 tip=7790c5b361158a.. supply=21,000,000
+    B: height=4 tip=7790c5b361158a.. supply=21,000,000
+    C: height=4 tip=7790c5b361158a.. supply=21,000,000
+
+[6] FINALITY (chot sau 6 khoi) - thu reorg SAU va GAN diem chot:
+    chuoi chinh: height=10, tip=78bcdd88691861..
+    (b1) fork o do sau 2 (< 6), dai hon 1 -> reorg? True (height=11)
+    (b2) fork SAU diem chot (do sau > 6), dai hon NHIEU -> reorg? False
+         -> finality BAO VE: tu choi reorg sau (tip khong doi)
+
+[7] KIEM CHUNG:
+    [OK] 3 node hoi tu + 21tr
+    [OK] round-robin: khoi i do authority[i%2] ky, ca 2 xen ke
+    [OK] finality: reorg NONG (<F) duoc
+    [OK] finality: reorg SAU (>F) bi tu choi
+    [OK] 21tr giu nguyen
+
+============================================================================
+ KET QUA: TAT CA PASS
+  - Round-robin PoA: khoi index i PHAI do authority[i % N] ky -> 1 authority KHONG the
+    mot minh dao chuoi dai (can khoa cua ca nhom) -> giam doc quyen/kiem duyet.
+  - Finality: khoi cu hon FINALITY duoc CHOT -> khong the bi reorg -> chong 'viet lai lich su'.
+  - 3 node (2 ky + 1 quan sat) hoi tu cung 1 chuoi qua P2P ma hoa.
+  *** LUU Y ***
+  - Round-robin can co che 'bo luot' neu 1 authority offline (liveness) - chua lam o day.
+  - Nhieu authority = tin cay PHAN TAN hon 1 nguoi, nhung VAN la tap cho phep (federation),
+    chua phai phi tap trung mo nhu PoW/PoS. Lo trinh: mo rong tap authority / chuyen co che.
+============================================================================

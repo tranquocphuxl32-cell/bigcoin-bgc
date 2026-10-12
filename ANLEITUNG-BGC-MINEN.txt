@@ -1,0 +1,95 @@
+============================================================================
+ BGC MINEN - ANLEITUNG (so einfach wie Bitcoin, jeder kann mitmachen)
+ "BGC: Die post-quanten Waehrung, geboren fuer das Zeitalter von KI und Robotern."
+============================================================================
+
+BGC wird geschuerft WIE BITCOIN, ist aber STAERKER:
+  - Fair Launch, KEIN Premine: jede Muenze wird durch Mining erzeugt (PoW).
+  - Erlaubnisfrei (permissionless): jeder darf mitmachen - Rechner anschliessen,
+    fertig.
+  - Mit Halving (Belohnung halbiert sich regelmaessig), automatischer
+    Schwierigkeitsanpassung, Coinbase-Reife und laengster-Kette-nach-Chainwork
+    (genau wie Bitcoin).
+  - ANDERS ALS BTC: Signaturen sind HASH-BASIERT (XMSS) => QUANTENSICHER.
+  - ANDERS ALS BTC: jede Verbindung zwischen Rechnern ist Ende-zu-Ende
+    VERSCHLUESSELT.
+
+----------------------------------------------------------------------------
+ WAS WIRD BENOETIGT
+----------------------------------------------------------------------------
+  - Python 3 (ab 3.9). Keine zusaetzlichen Bibliotheken noetig (nur Pythons
+    Standardbibliothek). Laeuft unter Windows / macOS / Linux.
+  - Diese Dateien im selben Ordner:
+        BGC-Miner.bat        <- Ein-Klick-Start (Windows: Doppelklick)
+        BGC-Miner.command    <- Ein-Klick-Start (macOS/Linux)
+        bgc_app.py           <- die App (Oberflaeche im Browser)
+        run_miner.py         <- Mining-Logik (Kommandozeile, optional)
+        bgcfl_engine.py      <- Kern der Kette (PoW, Halving, Retarget, Chainwork)
+        bgcfl_wallet.py      <- quantensichere Brieftasche (wird erzeugt)
+        bgcfl_genesis.json   <- Block 0, fuer ALLE Rechner GLEICH (Pflicht)
+        bigcoin_pq.py        <- quantensichere Signaturen (XMSS)
+        bgc_secure.py        <- verschluesselter P2P-Kanal
+
+----------------------------------------------------------------------------
+ START MIT EINEM KLICK (empfohlen)
+----------------------------------------------------------------------------
+  Windows : Doppelklick auf  BGC-Miner.bat
+  macOS   : einmalig im Terminal  chmod +x BGC-Miner.command  danach Doppelklick
+  Linux   : ./BGC-Miner.command
+
+  -> Es oeffnet sich die Oberflaeche im Browser (http://localhost:7000).
+  -> Beim ersten Start wird eine Brieftasche erzeugt (dauert einige Sekunden).
+  -> Oben rechts: SPRACHE waehlen (Deutsch / English / Tieng Viet).
+  -> Auf "Mining starten" klicken. Fertig - du schuerfst BGC.
+
+  Das schwarze Fenster bitte offen lassen, solange du schuerfst.
+  Zum Beenden das Fenster schliessen.
+
+----------------------------------------------------------------------------
+ DIE OBERFLAECHE
+----------------------------------------------------------------------------
+  - Kennzahlen oben: Hoehe (Bloecke), verbundene Knoten, dein Guthaben,
+    aktuelle Belohnung, ausgegebene Menge / Maximum (21 Mio).
+  - Mining: Knopf zum Starten/Stoppen; Anzeige wieviel bereits verfuegbar ist.
+  - Brieftasche: deine Empfangsadresse (Knopf zum Kopieren).
+  - BGC senden: Adresse + Betrag + Notiz -> "Senden" (quantensicher signiert).
+  - Netzwerk beitreten: Adresse eines Seed-Knotens (IP:Port) eingeben.
+  - Ereignisse: Protokoll (geschuerfte Bloecke, Sendungen ...).
+
+----------------------------------------------------------------------------
+ EINEM NETZWERK BEITRETEN (mit anderen zusammen schuerfen)
+----------------------------------------------------------------------------
+  In der Oberflaeche unter "Netzwerk beitreten" die Seed-Adresse eingeben,
+  z.B.  203.0.113.5:9333 , dann "Verbinden".
+  ODER beim Start uebergeben:
+        python bgc_app.py --peers 203.0.113.5:9333
+  WICHTIG: ALLE Rechner muessen DIESELBE Datei bgcfl_genesis.json verwenden
+  (einfach unveraendert kopieren) - sonst entsteht ein anderes Netz.
+
+  Details zum Aufsetzen oeffentlicher Seed-Knoten auf einem Server (VPS):
+  siehe  OEFFENTLICHES-NETZWERK-VPS.txt
+
+----------------------------------------------------------------------------
+ OHNE OBERFLAECHE (Kommandozeile)
+----------------------------------------------------------------------------
+    python run_miner.py                      # solo schuerfen
+    python run_miner.py --peers IP:9333      # Netzwerk beitreten
+  Befehle: bal | addr | send <adresse> <BGC> [notiz] | peers | stop | mine | quit
+
+----------------------------------------------------------------------------
+ WICHTIGE HINWEISE
+----------------------------------------------------------------------------
+  - Brieftaschen-Datei (my_bgc_wallet.json) SICHER aufbewahren. Verlust = Muenzen
+    verloren. Niemand kann sie wiederherstellen.
+  - XMSS-Brieftaschen haben eine BEGRENZTE Anzahl Signaturen (Standard 4096).
+    Die Oberflaeche zeigt "Signaturen uebrig". Wenn fast aufgebraucht: neue
+    Brieftasche anlegen und Guthaben umbuchen.
+  - Dies ist ein PROTOTYP zum Lernen/Vorfuehren, NICHT sicherheitsgeprueft.
+    Schwierigkeit/Blockzeit sind fuer die Demo klein eingestellt. Fuer ein
+    echtes Netz: Parameter anpassen (BLOCK_INTERVAL, Start-Schwierigkeit,
+    MATURITY) und VOR echtem Geld ein Sicherheitsaudit durchfuehren.
+  - BGC ist quantensicher auf der SIGNATUR-Ebene (XMSS). Ein echtes, lebendiges
+    Netz braucht ausserdem: stabile Seed-Knoten, Schutz gegen 51%-Angriffe und
+    eine ausreichend grosse Mining-Gemeinschaft.
+
+============================================================================

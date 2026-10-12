@@ -1,0 +1,106 @@
+======================================================================
+   BIGCOIN-M2M - KINH TE MAY-VOI-MAY (AI <-> ROBOT) tren BGC khang luong tu
+   Tac gia: Phu  |  D:\BitcoinCore\Bigcoin-BGC\  |  dung engine bigcoin_pq.py (cung folder)
+======================================================================
+
+MUC TIEU (theo 2 luu y anh dan)
+  1. BGC PHUC VU AI VA ROBOT: moi AI-agent / robot la MOT VI TU TRI, tu ky giao
+     dich (chu ky hash-based khang luong tu), tu tra tien cho nhau (M2M = machine
+     to machine) de thue dich vu/tai nguyen.
+  2. 21,000,000 CO DINH: kiem chung sau MOI khoi bang 'supply guard'. Neu tong
+     lech 21tr -> node tu choi. Khong duong nao in them du 1 satoshi.
+
+VONG KINH TE MINH HOA (da chay that)
+  Nguoi --thue--> AI-Agent --thue (M2M)--> Robot giao hang --tra sac (M2M)-->
+  Tram sac --dong gop--> quy AI. Tien chay qua CHUOI MAY MOC tu dong, moi buoc
+  ky khang luong tu, 21tr luon bao toan (supply-guard OK sau tung khoi).
+
+VAI TRO MOI TRONG HE
+  - AI-Agent: nhan viec tu nguoi, dieu phoi, thue robot lam phan vat ly.
+  - Robot giao hang: lam viec vat ly, tu tra tien dien/sac (M2M).
+  - Tram sac: ban dien cho robot, dong gop lai quy phat trien AI.
+  => BGC la don vi thanh toan cho CA tri tue (AI) LAN lao dong vat ly (robot).
+
+*** LUU Y QUAN TRONG CHO ANH (an ninh may tu tri) ***
+  1. Chu ky one-time XMSS la STATEFUL. Moi robot/AI PHAI luu chi so leaf 'next'
+     xuong bo nho KHONG BAY (flash/disk) TRUOC khi ky. Robot reboot/crash ma quen
+     -> ky lai cung leaf -> LO KHOA -> mat sach tien. Day la RUI RO SO 1 cho thiet
+     bi tu tri (khac voi vi nguoi it ky). Giai phap: ghi 'next' nguyen tu truoc khi
+     ky; hoac nang cap SPHINCS+ (hash-based, KHONG trang thai - ky vo han lan).
+  2. Khoa robot nam TREN robot -> chiem robot = chiem tien. Can vi cung / TEE / enclave.
+  3. 21tr chi vung neu NGUOI DUNG tu chay node kiem - dung tin con so may phat ra.
+  4. Premine + PoA: van phai tin founder (giu 11tr, ky khoi). Xem whitepaper muc 6.
+  5. May chi tieu TU DONG -> phai dat HAN MUC/quy tac chi tieu, keo robot loi hoac
+     bi chiem se tieu sach quy. (Vd: robot chi duoc tra toi da X BGC/ngay.)
+
+CACH CHAY (can bigcoin_pq.py cung thu muc):
+  python3 bigcoin_m2m.py
+
+----------------------------------------------------------------------
+   KET XUAT CHAY THAT (python3 bigcoin_m2m.py):
+----------------------------------------------------------------------
+==============================================================================
+ BIGCOIN-M2M - kinh te MAY-VOI-MAY (AI <-> robot), khang luong tu, 21tr co dinh
+==============================================================================
+
+[1] CAC TAC NHAN (moi cai 1 vi tu tri, chu ky hash-based):
+    Founder      BGCQb6e47114741fec7bea5cacb398..
+    AI-Treasury  BGCQ8647a4a9612bc68150d40a9579..
+    Human        BGCQ80efd6e28a033cf3b8aca9b7f1..
+    AI-Agent     BGCQ413975659993ad680acdc2828d..
+    Robot-Giao   BGCQb3ef80dfc1a5563d9e5c2fa384..
+    Tram-Sac     BGCQc310c339fcd3a871ece571de45..
+
+[2] GENESIS premine 21tr (11tr founder + 10tr AI):
+      [supply-guard] sau genesis: 21,000,000 BGC  OK (=21tr)
+
+[3] NAP VON cho nguoi va cac may:
+    Founder -> Human: 1000 BGC                 | memo: "cap von nguoi dung"  [OK]
+    Founder -> AI-Agent: 500 BGC               | memo: "von van hanh AI-agent"  [OK]
+    AI-Treasury -> Robot-Giao: 300 BGC         | memo: "trien khai robot giao hang"  [OK]
+    AI-Treasury -> Tram-Sac: 200 BGC           | memo: "trien khai tram sac"  [OK]
+      [supply-guard] sau nap von: 21,000,000 BGC  OK (=21tr)
+
+[4] VONG KINH TE MAY-VOI-MAY (tu dong, moi buoc ky khang luong tu):
+    Human -> AI-Agent: 50 BGC                  | memo: "Nguoi thue AI: giao goi hang toi Q1"  [OK]
+    AI-Agent -> Robot-Giao: 30 BGC             | memo: "AI thue robot giao hang (M2M)"  [OK]
+    Robot-Giao -> Tram-Sac: 8 BGC              | memo: "Robot tra tien sac pin (M2M)"  [OK]
+    Tram-Sac -> AI-Treasury: 2 BGC             | memo: "Tram sac dong gop quy phat trien AI"  [OK]
+      [supply-guard] sau vong M2M: 21,000,000 BGC  OK (=21tr)
+
+[5] SO DU SAU VONG CHAY (tien chay qua chuoi may, 21tr bao toan):
+    Founder     :     10,998,500 BGC
+    AI-Treasury :      9,999,502 BGC
+    Human       :            950 BGC
+    AI-Agent    :            520 BGC
+    Robot-Giao  :            322 BGC
+    Tram-Sac    :            206 BGC
+    TONG        :     21,000,000 BGC
+
+[6] DOC YEU CAU ON-CHAIN (AI/robot quet chuoi de biet viec):
+    - Nguoi thue AI: giao goi hang toi Q1
+    - AI thue robot giao hang (M2M)
+    - Robot tra tien sac pin (M2M)
+
+[7] CHUNG MINH 21tr KHONG THE TANG (supply guard chan khoi vi pham):
+    coinbase tu in 1 BGC -> CHAN: coinbase khong duoc tao coin
+    tong cung KHONG doi: 21,000,000 BGC (van 21tr). Khong co duong nao tang.
+
+[8] NODE MOI tu xac minh lai + supply guard tung khoi:
+    9 khoi: HOP LE & LUON = 21tr
+
+==============================================================================
+ KET LUAN & LUU Y CHO ANH
+  - BGC phuc vu AI VA ROBOT: moi may la 1 vi tu tri, tu ky (khang luong tu), tu
+    tra tien cho nhau (M2M). Vong: Nguoi -> AI -> Robot giao -> Tram sac -> quy AI.
+  - 21,000,000 CO DINH: supply-guard kiem sau MOI khoi; khong duong nao in them.
+  *** LUU Y QUAN TRONG (an ninh may tu tri) ***
+  1. Chu ky one-time (XMSS) la STATEFUL: moi robot/AI PHAI luu chi so leaf 'next'
+     xuong bo nho KHONG BAY (flash/disk). Robot reboot/crash ma QUEN -> ky lai cung
+     leaf -> LO KHOA -> mat sach tien. Day la rui ro so 1 cho thiet bi tu tri.
+     (Giai phap: luu 'next' nguyen tu truoc khi ky; hoac dung SPHINCS+ khong trang thai.)
+  2. Khoa cua robot nam TREN robot -> robot bi chiem = tien bi chiem. Can vi cung/TEE.
+  3. 21tr chi vung neu NGUOI DUNG tu chay node kiem (dung tin may phat).
+  4. Premine + PoA: van phai tin founder (giu 11tr, ky khoi). Xem whitepaper muc 6.
+  5. May tra tien tu dong -> dat HAN MUC/quy tac chi tieu, keo robot loi tieu sach quy.
+==============================================================================

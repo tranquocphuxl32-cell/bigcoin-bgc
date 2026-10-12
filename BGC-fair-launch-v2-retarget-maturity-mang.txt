@@ -1,0 +1,105 @@
+======================================================================
+   BGC-FL v2 - POW GAN PRODUCTION: RETARGET + COINBASE MATURITY + MANG NHIEU THO DAO
+   Tac gia: Phu  |  D:\BitcoinCore\Bigcoin-BGC\
+======================================================================
+
+HOAN THIEN PoW fair-launch (3 thu con thieu da lam xong):
+
+1. DIEU CHINH DO KHO (retarget) - bgcfl_engine.py
+   Moi RETARGET khoi, do kho tu chinh theo thoi gian thuc: dao NHANH hon muc tieu
+   -> target NHO di (KHO hon); dao CHAM -> target TO ra (de hon). Clamp 4x chong soc.
+   (BTC: moi 2016 khoi.) Demo: dao nhanh -> khoi 8 kho hon; dao cham -> khoi 16 de hon.
+
+2. COINBASE MATURITY - bgcfl_engine.py
+   Coin VUA DAO phai cho MATURITY khoi moi tieu duoc (demo 5, BTC 100). Chong trom
+   coin moi qua reorg. Demo: tieu ngay -> CHAN; sau 5 khoi -> OK.
+
+3. FORK-CHOICE THEO CHAINWORK (tong do kho, khong phai so khoi) - dung tieu chuan BTC.
+   Moi khoi gop 2^256/(target+1) vao chainwork; nhanh NHIEU CHAINWORK NHAT thang.
+
+4. MANG NHIEU THO DAO (bgcfl_net.py) - P2P MA HOA + PoW tu dao
+   3 tho doc lap (vi rieng, khong xin phep) tu dao, gossip khoi qua kenh ChaCha20-
+   Poly1305, hoi tu theo chainwork. KHONG premine. Lien may: doi 127.0.0.1 -> IP that.
+
+KET QUA CHAY (ca 2 demo PASS):
+  bgcfl_demo2.py: retarget dung huong; maturity chan tieu som/cho phep sau; chainwork reorg; 21tr nguyen.
+  bgcfl_net.py  : 3 tho tu dao, HOI TU cung height/tip/chainwork; moi coin deu dao ra (fair).
+
+*** CON LAI de thanh mainnet that (trung thuc) ***
+  - Tham so that: BLOCK_INTERVAL 600s, RETARGET 2016, MATURITY 100, HALVING 210000,
+    GENESIS_TARGET kho hon nhieu (demo dang de de chay nhanh).
+  - Mempool phi/uu tien + chong spam giao dich; gioi han kich thuoc khoi.
+  - Checkpoint/assumevalid cho dong bo nhanh; chong eclipse; transport v2 da co (bgc_secure).
+  - Kiem thu tai cao + danh gia bao mat doc lap TRUOC khi mo cong.
+  - Phap ly: fair launch giam manh rui ro chung khoan nhung KHONG mien tru; AML/chuyen tien
+    van co the ap; hoi luat su + can nhac Reg S/geoblock US luc dau.
+
+FILE:
+  bgcfl_engine.py (v2) - PoW + retarget + maturity + chainwork + emission halving
+  bgcfl_demo2.py       - demo retarget/maturity/chainwork
+  bgcfl_net.py         - mang nhieu tho dao that (P2P ma hoa, PoW tu dao)
+CHAY: python bgcfl_demo2.py   |   python bgcfl_net.py
+
+----------------------------------------------------------------------
+   KET XUAT bgcfl_demo2.py va bgcfl_net.py:
+----------------------------------------------------------------------
+=== bgcfl_demo2.py ===
+============================================================================
+ BGC-FL v2 - RETARGET (dieu chinh do kho) + COINBASE MATURITY + CHAINWORK
+============================================================================
+
+[0] THAM SO: retarget moi 8 khoi | muc tieu 10s/khoi | maturity 5 khoi
+
+[1] DIEU CHINH DO KHO theo thoi gian thuc (target NHO = KHO hon):
+    target khoi 0  (genesis)        = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+    target khoi 8 (sau cua so DAO NHANH) = 0x6fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff  -> KHO HON (dao nhanh -> siet)
+    target khoi 16 (sau cua so DAO CHAM) = 0xc3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe  -> DE HON (dao cham -> noi)
+    => do kho TU DIEU CHINH dung huong: True
+
+[2] COINBASE MATURITY: coin vua dao phai cho 5 khoi moi tieu duoc:
+    tieu coinbase ngay (sau 1 khoi) -> CHAN: coinbase chua truong thanh (can 5 khoi)
+    tieu coinbase sau 5 khoi (>= 5) -> OK
+
+[3] FORK-CHOICE THEO CHAINWORK (tong do kho, khong phai so khoi):
+    chuoi [1] chainwork hien tai = 7.062e+03 (height 17)
+    nap nhanh dai hon -> reorg? True | chainwork moi = 7.496e+03 height 19
+    tong cung <= 21tr? True
+
+============================================================================
+ KET QUA
+    [OK] retarget dung huong (nhanh->kho, cham->de)
+    [OK] coinbase maturity chan tieu som, cho phep sau
+    [OK] chainwork reorg + 21tr nguyen
+
+  - Do kho TU DIEU CHINH (nhu BTC/2016 khoi) -> khoi ra deu du hashrate len/xuong.
+  - Coinbase maturity chong trom coin vua dao khi co reorg.
+  - Fork-choice theo CHAINWORK (tong do kho) - dung tieu chuan BTC.
+============================================================================
+
+=== bgcfl_net.py ===
+==========================================================================
+ BGC-FL NET - nhieu THO DAO that, P2P MA HOA, PoW tu dao, hoi tu chainwork
+==========================================================================
+
+[1] 3 tho dao doc lap (vi rieng, khong xin phep). Cong: [35459, 38639, 46633]
+[2] Noi luoi P2P ma hoa xong. Bat dau TU DAO (PoW)...
+
+[3] KET QUA sau khi dao:
+    ThoA: height=13 chainwork=7.168e+03 supply=575.0 tip=003f833d1329..
+    ThoB: height=13 chainwork=7.168e+03 supply=575.0 tip=003f833d1329..
+    ThoC: height=13 chainwork=7.168e+03 supply=575.0 tip=003f833d1329..
+
+[4] PHAN BO (fair - moi coin deu DAO ra, KHONG premine):
+    ThoA dao duoc: 0.0 BGC
+    ThoB dao duoc: 0.0 BGC
+    ThoC dao duoc: 575.0 BGC
+    tong cung = 575.0 BGC (ra dan theo so khoi, <= 21tr: True)
+
+[5] HOI TU: 3 tho cung 1 tip & height? True
+
+==========================================================================
+ KET QUA: TAT CA PASS - mang fair-launch nhieu tho dao CHAY THAT
+  - Nhieu tho doc lap TU dao (PoW), gossip khoi qua kenh MA HOA, hoi tu theo chainwork.
+  - KHONG premine: moi coin do dao ra; khong ai xin phep ai (permissionless).
+  - Lien may that: doi 127.0.0.1 thanh IP LAN/WAN va mo cong la chay dc giua cac may.
+==========================================================================

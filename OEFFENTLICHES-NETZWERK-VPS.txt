@@ -1,0 +1,116 @@
+============================================================================
+ BGC - OEFFENTLICHES NETZWERK AUFBAUEN (Seed-Knoten auf einem Server/VPS)
+ So wird aus einem Testlauf ein echtes Netz, dem Fremde beitreten koennen.
+============================================================================
+
+ZIEL: Ein paar stabile, immer erreichbare "Seed-Knoten" betreiben, zu denen
+sich alle anderen Rechner verbinden. Genau so startete auch Bitcoin.
+
+----------------------------------------------------------------------------
+ 0) UEBERBLICK - WAS BRAUCHT EIN ECHTES NETZ
+----------------------------------------------------------------------------
+  (1) GLEICHE Genesis-Datei fuer alle (bgcfl_genesis.json) - einmal festlegen.
+  (2) 1-3 Seed-Knoten mit oeffentlicher IP, Port 9333 offen, laufen rund um die Uhr.
+  (3) Ein oeffentlicher Block-Explorer (Weboberflaeche), damit jeder das Netz
+      pruefen kann.
+  (4) Eine einfache Anleitung + die App, damit Leute mit einem Klick mitmachen.
+  (5) OPTIONAL: ein Faucet (verteilt kleine Mengen zum Ausprobieren).
+
+----------------------------------------------------------------------------
+ 1) GENESIS EINMAL FESTLEGEN (sehr wichtig)
+----------------------------------------------------------------------------
+  - Auf EINEM Rechner:   python bgcfl_genesis.py
+    -> erzeugt bgcfl_genesis.json (Block 0, mit fester Nachricht, Coinbase in
+       eine NICHT ausgebbare Adresse -> kein Premine).
+  - Diese EINE Datei an ALLE verteilen (Website, Repo). Niemand erzeugt sie neu.
+  - Unterschiedliche Genesis = unterschiedliches Netz. Deshalb: nur EINE.
+
+----------------------------------------------------------------------------
+ 2) SEED-KNOTEN AUF EINEM VPS
+----------------------------------------------------------------------------
+  Beispiel Ubuntu-Server:
+
+  a) Python und Dateien bereitstellen:
+       sudo apt update && sudo apt install -y python3
+       # Projektordner hochladen (scp/git), inkl. bgcfl_genesis.json
+
+  b) Port 9333 oeffnen (Firewall / Security Group des Anbieters):
+       sudo ufw allow 9333/tcp
+     Beim Cloud-Anbieter (AWS/GCP/Hetzner...) den Port zusaetzlich in der
+     Security Group / Firewall freigeben.
+
+  c) Knoten starten (als Dienst, damit er dauerhaft laeuft) - systemd-Beispiel:
+       sudo tee /etc/systemd/system/bgc-seed.service >/dev/null <<'EOF'
+       [Unit]
+       Description=BGC Seed Node
+       After=network.target
+       [Service]
+       WorkingDirectory=/opt/bgc
+       ExecStart=/usr/bin/python3 /opt/bgc/run_miner.py --port 9333 --no-mine
+       Restart=always
+       User=bgc
+       [Install]
+       WantedBy=multi-user.target
+       EOF
+       sudo systemctl daemon-reload
+       sudo systemctl enable --now bgc-seed
+
+     Hinweis: "--no-mine" = der Seed synchronisiert nur und verteilt Bloecke
+     (muss nicht selbst schuerfen). Zum Mitschuerfen einfach weglassen.
+
+  d) Zwei/drei Seeds? Jeden mit  --peers  auf die anderen zeigen lassen:
+       python3 run_miner.py --port 9333 --no-mine --peers SEED2_IP:9333,SEED3_IP:9333
+
+----------------------------------------------------------------------------
+ 3) OEFFENTLICHER EXPLORER (damit jeder das Netz sehen/pruefen kann)
+----------------------------------------------------------------------------
+  Auf einem Seed:
+       python3 bgc_explorer_server.py bgcfl_data 8800
+  Port 8800 freigeben (ufw allow 8800/tcp). Dann erreichbar unter
+       http://SEED_IP:8800
+  Zeigt Hoehe, ausgegebene Menge, letzte Bloecke, groesste Guthaben - live.
+  (Fuer HTTPS/Domain einen Reverse-Proxy wie nginx davor setzen.)
+
+----------------------------------------------------------------------------
+ 4) LEUTE MITMACHEN LASSEN (ein Klick)
+----------------------------------------------------------------------------
+  Auf der Projekt-Website anbieten:
+    - den Projektordner (inkl. bgcfl_genesis.json) als Download/Repo,
+    - die Datei BGC-Miner.bat (Windows) / BGC-Miner.command (macOS/Linux),
+    - die Seed-Adresse(n), z.B.  seed1.deinprojekt.org:9333
+  Nutzer tragen die Seed-Adresse in der App unter "Netzwerk beitreten" ein -
+  oder in BGC-Miner.bat die Zeile  SET SEED=seed1.deinprojekt.org:9333  setzen.
+  Dann: Doppelklick -> Browser -> "Mining starten". Fertig.
+
+----------------------------------------------------------------------------
+ 5) DOMAIN / DNS-SEEDS (wie Bitcoin)
+----------------------------------------------------------------------------
+  - Feste Domainnamen fuer die Seeds vergeben (seed1..., seed2...), damit sich
+    IP-Adressen aendern koennen, ohne dass Nutzer etwas anpassen muessen.
+  - Mehrere Seeds an verschiedenen Orten/Anbietern = mehr Ausfallsicherheit.
+
+----------------------------------------------------------------------------
+ CHECKLISTE
+----------------------------------------------------------------------------
+  [ ] EINE bgcfl_genesis.json festgelegt und veroeffentlicht
+  [ ] >=2 Seed-Knoten, Port 9333 offen, laufen 24/7, zeigen aufeinander
+  [ ] oeffentlicher Explorer erreichbar (Port 8800 / Domain)
+  [ ] App + Anleitung + Seed-Adresse(n) veroeffentlicht
+  [ ] (optional) Faucet zum Ausprobieren
+
+----------------------------------------------------------------------------
+ EHRLICHE HINWEISE (bitte lesen)
+----------------------------------------------------------------------------
+  - Fuer ein ERNSTHAFTES Netz vorher die Parameter in bgcfl_engine.py anpassen
+    (BLOCK_INTERVAL hoeher, realistische Start-Schwierigkeit, MATURITY groesser)
+    und den Code durch ein SICHERHEITSAUDIT pruefen lassen.
+  - Sicherheit haengt an echter, verteilter Rechenleistung: wenige Schuerfer =
+    anfaellig fuer 51%-Angriffe. Eine breite Gemeinschaft ist entscheidend.
+  - Rechtliches (je nach Land unterschiedlich): Ausgabe/Handel von Kryptowaehrung
+    kann reguliert sein. Vor einer oeffentlichen Ausgabe fachkundigen Rechtsrat
+    einholen. Diese Anleitung ist technisch, keine Rechtsberatung.
+  - Quantensicher ist BGC auf der SIGNATUR-Ebene (XMSS); der PoW-Hash (SHA-256)
+    wird durch Quantencomputer nur moderat beruehrt (Grover halbiert die
+    Sicherheit, kein Totalbruch).
+
+============================================================================

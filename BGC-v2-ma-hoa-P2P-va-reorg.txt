@@ -1,0 +1,83 @@
+======================================================================
+   BGC v2 - MA HOA P2P (BIP324-style) + FORK-CHOICE / REORG
+   Tac gia: Phu  |  D:\BitcoinCore\Bigcoin-BGC\
+======================================================================
+
+HAI NANG CAP de BGC san sang cho mang nhieu node khong tin nhau:
+
+1. MA HOA P2P (bgc_secure.py) - kieu BIP324
+   - Bat tay ECDH (secp256k1, khoa epheral moi ket noi -> forward secrecy).
+   - HKDF-SHA256 dan xuat 2 khoa huong; ChaCha20-Poly1305 (RFC8439) ma hoa+xac thuc.
+   - Moi ban tin P2P = 1 khung ma hoa [4 byte len][ciphertext+tag 16B].
+   - Ke nghe len KHONG doc duoc (ma hoa) va KHONG sua duoc (MAC sai -> ngat).
+   - LUU Y: send() co KHOA (lock) -> nhieu luong gui an toan (tranh dua nonce).
+
+2. FORK-CHOICE / REORG (bgc_engine.py v2)
+   - Kho khoi theo hash; chon NHANH DAI NHAT hop le lam 'active'; hoa thi giu nhanh
+     cu (first-seen). Khi co nhanh dai hon -> tu REORG (tai tao UTXO tu genesis).
+   - Tx o nhanh bi bo quay lai mempool; reorg KHONG tao/mat coin (21tr bat bien).
+   - Dong bo dinh ky (ticker hello moi 0.3s) -> cac node HOI TU chac chan.
+
+KET QUA CHAY (ca 2 demo PASS):
+  - bgc_demo.py  : 2 node dong bo qua kenh MA HOA; genesis 21tr; 11tr khoa; luu dia;
+                   nap lai tu kiem; A==B (cung height, cung tip); explorer HTML.
+  - bgc_demo2.py : (A) P2P ma hoa dong bo; (B) nap 2 nhanh canh tranh -> node chon
+                   nhanh dai hon, REORG, tx nhanh ngan tro lai mempool, 21tr giu nguyen.
+
+*** LUU Y QUAN TRONG ***
+  1. Fork-choice o day = 'nhanh dai nhat' (PoA). That te can them: chong spam khoi,
+     gioi han do sau reorg (finality), nhieu authority luan phien de khong ai doc quyen.
+  2. Ma hoa KENH dung ECDH CO DIEN: neu lo luong tu chi lo SIEU DU LIEU mang (ai noi
+     voi ai), KHONG lo tien (chu ky coin van hash-based PQ). Nang KEM hau luong tu
+     (ML-KEM/Kyber) khi can.
+  3. Day van la prototype hoc tap: can kiem thu tai cao, chong DoS, va danh gia bao mat
+     doc lap truoc khi dung that.
+
+FILE MOI/CAP NHAT:
+  bgc_secure.py (moi) - kenh ma hoa ECDH+ChaCha20-Poly1305 (co self-test: python bgc_secure.py)
+  bgc_engine.py (v2)  - them kho khoi + fork-choice + reorg
+  bgc_p2p.py    (v2)  - dung kenh ma hoa + ticker dong bo dinh ky
+  bgc_demo2.py  (moi) - demo ma hoa P2P + reorg
+  btclib.py           - secp256k1 (bgc_secure can cho ECDH; chi ma hoa KENH, khong phai coin)
+
+----------------------------------------------------------------------
+   KET XUAT bgc_demo2.py:
+----------------------------------------------------------------------
+============================================================================
+ BGC DEMO 2 - P2P MA HOA + FORK-CHOICE/REORG (san sang nhieu node)
+============================================================================
+
+[A] KENH P2P MA HOA (ECDH secp256k1 + ChaCha20-Poly1305):
+    tu kiem transport: A->B "xin chao tu A (BGC P2P ma hoa)" | B->A "chao lai tu B (da ma hoa)"  -> ma hoa OK
+    node A cong 34401 | node B cong 40001 | ma hoa = True
+    A height=2 supply=21,000,000
+    B height=2 supply=21,000,000  (dong bo qua kenh MA HOA)
+    Alice tren A=100, tren B=100  (KHOP)
+
+[B] FORK-CHOICE / REORG - nap 2 nhanh canh tranh, node chon nhanh DAI HON:
+    chuoi chung: height=2, tip=5e383760313a9c..
+
+    + nap NHANH X (1 khoi, co txA): height=3 | Alice=100 | tip=f56d277f555c19..
+    + nap Y1 (bang chieu cao X): height=3 | tip van X? True  (hoa -> giu X, first-seen)
+    + nap Y2 (nhanh Y dai hon) -> REORG=True: height=4 | tip=Y2? True
+      Alice sau reorg = 0 (txA bi bo khoi chuoi)
+      txA quay lai mempool? True  | supply van = 21,000,000 (21tr? True)
+
+[C] KIEM CHUNG:
+    [OK] A: P2P ma hoa dong bo + 21tr
+    [OK] B: reorg sang nhanh dai hon
+    [OK] B: txA bi loai khoi chuoi active
+    [OK] B: txA tro lai mempool
+    [OK] B: supply van 21tr sau reorg
+
+============================================================================
+ KET QUA: TAT CA PASS
+  - P2P MA HOA: 2 node dong bo qua kenh ChaCha20-Poly1305 (ke nghe len mu).
+  - FORK-CHOICE: node tu chon nhanh dai nhat hop le; reorg bo nhanh ngan, tx tro lai mempool.
+  - Reorg KHONG tao/mat coin: 21tr bat bien suot. San sang cho mang nhieu node khong tin nhau.
+  *** LUU Y ***
+  - Fork-choice o day = 'nhanh dai nhat' (PoA). That te can them: chong spam khoi, gioi han
+    do sau reorg, va nhieu authority luan phien de khong 1 ben doc quyen tao nhanh.
+  - Ma hoa KENH dung ECDH co dien (lo luong tu chi lo metadata mang, KHONG lo tien);
+    coin van ky hash-based PQ. Co the nang KEM hau luong tu (ML-KEM) sau.
+============================================================================

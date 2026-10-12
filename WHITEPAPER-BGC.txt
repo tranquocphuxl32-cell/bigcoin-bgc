@@ -1,0 +1,69 @@
+======================================================================
+   BIGCOIN (BGC) - WHITEPAPER (ban trung thuc)
+   "Nhien lieu cho kinh te AI - robot"
+   Tac gia: mot ky su ẩn danh (but danh) | D:\BitcoinCore\Bigcoin-BGC\
+======================================================================
+
+TOM TAT
+  BGC la dong tien ky thuat so lam DON VI THANH TOAN cho kinh te giua con nguoi,
+  AI va robot. Nguoi tra BGC de nho AI/robot lam viec; AI va robot tra BGC cho
+  nhau (M2M) de thue tai nguyen (tinh toan, dien, dich vu). Tong cung CO DINH
+  21,000,000 BGC, khang luong tu, va AI CUNG TU KIEM CHUNG duoc moi con so.
+
+1. TAM NHIN
+  Khi AI va robot ngay cang tu tri, chung can mot don vi thanh toan may-doc-duoc,
+  khong bien gioi, khong trung gian giu tien. BGC dong vai tro do: "xang" cho tri
+  tue va lao dong may moc. Quy AI (10tr) duoc dung de phat trien chinh mang luoi AI.
+
+2. THONG SO (bat bien, verify duoc)
+  - Tong cung: 21,000,000 BGC (co dinh tuyet doi; khong co tro cap khoi, khong lam phat).
+  - Don vi nho nhat: 1 BGC = 100,000,000 (giong satoshi).
+  - Chu ky: HASH-BASED (XMSS/WOTS+, chuan NIST SP 800-208) -> khang may luong tu.
+  - Dong thuan: PoA (Proof-of-Authority) -> khong dao, xac nhan gan tuc thi.
+
+3. PHAN BO GENESIS (cong khai, minh bach - KHONG giau)
+  - 11,000,000 BGC (52%) -> FOUNDER. KHOA bang timelock on-chain (vesting), cong dong
+    doc 'lock_until' tren chuoi -> xac minh founder KHONG the ban thao som.
+  - 10,000,000 BGC (48%) -> QUY AI. Dung van hanh/phat trien mang AI; nen vesting 1 phan.
+  LY DO CONG BO RO: niem tin den tu MINH BACH + CODE EP BUOC, khong tu giau giem.
+  Giau ten co the (hop phap, nhu Satoshi); nhung quyen kiem soat nam cong khai tren
+  chuoi, nen che giau no la vo ich va phan tac dung.
+
+4. CACH HOAT DONG (kinh te AI <-> nguoi <-> robot)
+  - Giao dich mang MEMO: nguoi ghi yeu cau thang len chuoi; AI/robot quet chuoi, doc,
+    thuc hien. Vi du: tra 5 BGC + "giao hang toi Q1" -> AI thue robot (M2M) -> robot
+    tra tram sac (M2M) -> tram sac dong gop quy AI. Tien chay qua chuoi may tu dong.
+  - Moi AI-agent / robot la MOT VI tu tri, tu ky (khang luong tu), tu chi tieu
+    theo HAN MUC dat truoc.
+
+5. HIEU NANG
+  - Do tre xac nhan ~mili-giay (PoA) so voi ~10 phut cua BTC.
+  - Thong luong muc tieu >=1000x BTC (khoi 0.6s, suc chua lon); nut that la toc do
+    xac minh chu ky -> dung native crypto + nhieu loi. Danh doi: chu ky PQ nang,
+    khoi lon, bang thong cao, va PoA tap trung hon (nhanh <-> phi tap trung).
+
+6. NIEM TIN & MINH BACH (vi sao nen tin BGC)
+  - Ma nguon MO: luat nam trong code (vd tong_vao >= tong_ra -> khong in them coin).
+  - audit_supply(): ai chay node cung cong ra dung 21,000,000.
+  - Node moi TU XAC MINH lai ca chuoi tu genesis (khong tin ai noi).
+  - 11tr founder KHOA on-chain -> verify duoc founder khong xa som.
+
+7. RUI RO & HAN CHE (noi thang)
+  - PoA = tap trung: authority co the kiem duyet giao dich (khong in them coin duoc).
+    Lo trinh: chuyen sang NHIEU node PoA, roi phi tap trung hon.
+  - Chu ky one-time (XMSS) STATEFUL: thiet bi tu tri PHAI luu chi so leaf, keo lo khoa.
+  - Phap ly: neu BAN BGC ra cong chung, nhieu nuoc coi la phat hanh tai san so / co
+    the la chung khoan -> CAN tu van phap ly truoc. Lam ro BGC la tien dich vu, KHONG
+    hua loi nhuan. Khong quang cao sai, khong cam ket lai.
+  - Day la du an ky thuat; KHONG phai loi moi dau tu.
+
+8. LO TRINH
+  - Gom code thanh 1 node BGC hoan chinh (PQ + M2M + nhanh + vault) + luu dia + P2P.
+  - Vi nguoi dung + block explorer (cong dong "thay" truc quan).
+  - Cau AI that: noi quy AI voi dich vu AI (doc memo -> tra loi -> ghi so BGC).
+  - Phi tap trung dan PoA; vesting ro rang; cong bo kiem toan doc lap.
+
+======================================================================
+  BGC = tien cho ky nguyen AI-robot, 21tr co dinh, khang luong tu, MINH BACH.
+  Tac gia an danh nhung KHONG an giau quyen kiem soat - code noi thay loi hua.
+======================================================================

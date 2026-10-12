@@ -1,0 +1,77 @@
+======================================================================
+   BGC v5 - BO LAP LICH DAO TU DONG (timeout) + CHIU AUTHORITY CHET GIUA CHUNG
+   Tac gia: Phu  |  D:\BitcoinCore\Bigcoin-BGC\
+======================================================================
+
+HOAN THIEN LIVENESS: v4 con dieu khien TAY ai ky trai luot. v5 cho node TU QUYET
+bang TIMEOUT thuc -> mang tu chay, chiu authority chet giua chung ma khong can nguoi.
+
+CO CHE (bgc_node.py - vong lap dao moi node):
+  - DUNG LUOT (expected_auth(height)==minh): dao NGAY (delay 0).
+  - TRAI LUOT: cho timeout = block_time*(1 + 0.6*khoang_cach_rotation). Neu het cho ma
+    CHUA ai ra khoi do (height khong doi) -> dao trai luot (lien thay nguoi chet).
+  - Neu vua ky (recent-signer) -> nhuong luot (khong ky 2 khoi lien tiep).
+  - Ai ra khoi truoc thi cac node khac thay height tang -> huy luot, lam lai.
+
+KET QUA CHAY (bgc_demo5.py - TAT CA PASS):
+  - 3 authority node TU dao (khong dieu khien tay): 4s -> height 6, 3 node dong bo.
+  - KILL Auth1 giua chung (dung dao + ngat mang): Auth0 height 6 -> 10 (VAN TANG),
+    Auth0 & Auth2 van dong bo. Mang KHONG ket du mat 1 authority.
+  - So khoi ky: Auth0=4, Auth1=2 (chet nua chang), Auth2=4; khong ai ky lien tiep.
+  - 21tr giu nguyen suot.
+
+*** LUU Y ***
+  - Timeout co dinh theo khoang cach rotation (don gian, de hieu); production nen them
+    'wiggle' ngau nhien chong 2 node dung do, va phat authority ly keo dai.
+  - Van can DA SO authority online (N=3 chiu 1 chet). Qua nua chet -> ket (dung thiet ke).
+  - Day van la FEDERATION PoA (tap authority), chua phai phi tap trung mo nhu PoW/PoS.
+
+=== TRANG THAI BGC (toan bo da xong, tu viet, chay duoc, tu kiem chung) ===
+  Lop coin   : PQ khang luong tu (XMSS/WOTS+) | 21tr CO DINH (supply-guard) | timelock vesting
+  Kinh te    : memo on-chain, M2M AI <-> nguoi <-> robot
+  Hieu nang  : do tre ~ms, thong luong muc tieu ~1000x BTC (co ngoai suy trung thuc)
+  Ha tang    : luu dia (nap lai tu kiem), P2P MA HOA (ECDH+ChaCha20-Poly1305)
+  Dong thuan : fork-choice theo trong so, REORG, FINALITY, round-robin nhieu authority,
+               LIVENESS tu dong (timeout) chiu authority chet
+  Cong cu    : vi (luu leaf chong lo khoa), explorer HTML, 5 demo chay that
+
+CHAY: cd D:\BitcoinCore\Bigcoin-BGC & python bgc_demo5.py
+
+----------------------------------------------------------------------
+   KET XUAT bgc_demo5.py:
+----------------------------------------------------------------------
+==============================================================================
+ BGC DEMO 5 - DAO TU DONG (timeout) + KILL authority giua chung -> mang tu chay
+==============================================================================
+
+[1] 3 authority node da noi luoi (P2P ma hoa). Bootstrap genesis boi Auth0:
+    genesis xong: cac node height = [1, 1, 1] (dong bo)
+
+[2] BAT dao TU DONG o ca 3 node (block_time=0.5s). Chay 4s...
+    sau 4s: height = [6, 6, 6] | tips khop? True
+    (ca 3 TU dao, tu dong bo - khong he dieu khien tay)
+
+[3] KILL Auth1 (dung dao + ngat mang). Chay tiep 4s...
+    Auth1 da chet. Auth0 height 6 -> 10 (van TANG = mang khong ket)
+    Auth0 & Auth2 tips khop? True | height A=10 C=10
+
+[4] Kiem tra trat tu (sau khi mat 1 authority):
+    so khoi moi authority ky: {'Auth0': 4, 'Auth1': 2, 'Auth2': 4}
+    (Auth1 ky it hon han vi da offline nua chang; Auth0/Auth2 ky trai luot bu vao)
+
+[5] KIEM CHUNG:
+    [OK] dao tu dong: 3 node tu tien khoi + dong bo
+    [OK] kill Auth1: mang VAN tien khoi (liveness)
+    [OK] 21tr giu nguyen suot
+    [OK] khong ai ky 2 khoi lien tiep
+
+==============================================================================
+ KET QUA: TAT CA PASS
+  - Node TU dao theo timeout: dung luot dao ngay, trai luot cho timeout roi dao neu trong.
+  - KILL 1 authority giua chung -> mang TU CHAY tiep (khong can nguoi can thiep).
+  - 21tr bat bien; khong ai ky lien tiep; fork-choice theo trong so giu trat tu chuan.
+  *** LUU Y ***
+  - Timeout co dinh theo khoang cach rotation (don gian); production nen them 'wiggle'
+    ngau nhien chong dung do, va phat authority ly keo dai.
+  - Van can DA SO authority online. Day la federation PoA, chua phai phi tap trung mo.
+==============================================================================

@@ -1,0 +1,106 @@
+======================================================================
+   BGC-FL - FAIR LAUNCH KIEU BITCOIN (khong premine, PoW, halving)
+   + LO TRINH "DI TUNG BUOC NHU BTC"
+   Tac gia: Phu  |  D:\BitcoinCore\Bigcoin-BGC\
+======================================================================
+
+VI SAO DOI SANG FAIR LAUNCH: day la con duong SACH NHAT ve phap ly. Bitcoin gan
+nhu khong bi coi la chung khoan vi KHONG CO NGUOI BAN - khong ICO, khong premine,
+coin dao ra cong khai tu khoi 0, ai cung tham gia. "Di tung buoc nhu BTC" nghia la
+BGC cung lam vay -> giam manh rui ro chung khoan (Howey).
+
+KHUC RE (da chon): bo PREMINE 11tr founder + bo chuyen BAN coin + doi PoA -> PoW.
+Doi lai: chinh danh that + rui ro phap ly thap. Khong the vua giu 52% + ban, vua
+"sach nhu BTC".
+
+=== FILE KY THUAT (da chay, tu kiem chung) ===
+  bgcfl_engine.py - engine fair launch: PoW, subsidy halving, fork-choice chainwork,
+                    chong lam phat (coinbase <= subsidy+phi), chu ky khang luong tu.
+  bgcfl_demo.py   - demo: khong premine, 3 tho dao permissionless, halving 50->25->12.5,
+                    chan coinbase tham lam, reorg theo chainwork, tieu tien XMSS, cong bang.
+  Chay: python bgcfl_demo.py
+
+KET QUA DEMO (PASS): genesis chi la 1 khoi dao ra 50 BGC (khong 21tr san); nhieu tho
+  khac nhau dao; halving dung; coinbase doi qua subsidy BI CHAN; reorg theo chainwork;
+  Bob nhan tien qua chu ky khang luong tu; KHONG ai duoc phat san 21tr.
+
+=== LO TRINH TUNG BUOC NHU BTC (map lich su Bitcoin) ===
+  B1. CHOT fair-launch: khong premine (hoac quy dev nho, cong khai, khoa vesting - cang
+      gan 0 cang sach). Phat hanh = dao + halving -> ~21tr toi ~2140. (bgcfl_engine.py)
+  B2. CONG KHAI whitepaper + ma nguon mo (nhu paper 2008 + code 2009). But danh OK,
+      nhung luat + ma phai minh bach.
+  B3. GENESIS + fair launch tren PoW (permissionless): ai cung chay node + dao, khong
+      xin phep. (dung bgcfl_engine; them dieu chinh do kho + coinbase maturity cho that)
+  B4. GIEO cong dong nho: GitHub + dien dan/Discord; nguoi dam me chay node & dao. Gia
+      tri tu DUNG, khong tu ban.
+  B5. PHI TAP TRUNG THAT: nhieu tho/node doc lap, founder lui lai, khong kiem soat trung
+      tam. Day la thu (qua nhieu nam) dua coin ra khoi "chung khoan" (off-ramp SEC: khi
+      no luc quan ly cua founder cham dut).
+  B6. TIEN ICH AI/robot noi len tu su dung that; NIEM YET san tinh sau, khi da phi tap
+      trung + co luat su soat.
+
+=== LUU Y PHAP LY (nhac lai - KHONG phai tu van luat) ===
+  - Fair launch GIAM MANH rui ro chung khoan (khong nguoi ban) nhung KHONG mien tru tuyet doi.
+  - Chuyen tien/AML (FinCEN MSB + giay phep tung bang + BitLicense NY) van co the ap cho
+    dich vu/san. Thue, OFAC van ap.
+  - Chua co luat khung (CLARITY Act dang dinh tre 2026); SEC/CFTC ra quy dinh dan.
+  - TRUOC khi cham toi nguoi My: thue luat su chung khoan/crypto My; can nhac Reg S +
+    geoblock US luc dau (ban ngoai My truoc).
+
+=== CON THIEU cho PoW production (trung thuc) ===
+  - Dieu chinh do kho (retarget) moi N khoi (demo dang target co dinh).
+  - Coinbase maturity (~100 khoi moi tieu duoc coinbase) chong rui ro reorg.
+  - Mempool phi/uu tien, chong spam, va mang P2P da co (bgc_p2p) can noi vao PoW.
+
+----------------------------------------------------------------------
+   KET XUAT bgcfl_demo.py:
+----------------------------------------------------------------------
+============================================================================
+ BGC-FL - FAIR LAUNCH kieu BITCOIN: KHONG premine, PoW, halving, khang luong tu
+============================================================================
+
+[0] THONG SO PHAT HANH (nhu BTC, demo thu nho):
+    subsidy ban dau = 50 BGC/khoi | halving moi 10 khoi | tong toi da = 1,000.0000 BGC
+
+[1] KHONG PREMINE: genesis cung chi la 1 khoi DAO ra subsidy, cho nguoi dao genesis.
+    genesis dao boi ThoA: OK | ThoA nhan 50.0 BGC (= subsidy, KHONG phai 21tr)
+    tong cung sau genesis = 50.0 BGC (ra DAN, khong ai co 21tr san)
+
+[2] PERMISSIONLESS: 3 tho thay nhau dao (ai tim nonce truoc thi duoc), khong authority:
+    nguoi dao moi khoi: ['ThoA', 'ThoA', 'ThoC', 'ThoA', 'ThoB', 'ThoA', 'ThoB', 'ThoB', 'ThoB', 'ThoC', 'ThoB', 'ThoA']
+    -> nhieu tho khac nhau dao duoc; khong ai xin phep ai.
+
+[3] HALVING: subsidy giam mot nua sau moi 10 khoi:
+    khoi   0: subsidy = 50.0 BGC
+    khoi   9: subsidy = 50.0 BGC
+    khoi  10: subsidy = 25.0 BGC
+    khoi  20: subsidy = 12.5 BGC
+    tong cung hien tai (height 12) = 550.0 BGC / toi da 1,000.0
+
+[4] CHONG LAM PHAT (21tr cung): coinbase doi NHIEU HON subsidy -> BI TU CHOI:
+    coinbase doi +999 BGC ngoai subsidy -> CHAN (khong vao chuoi active)
+
+[5] FORK-CHOICE THEO CHAINWORK (reorg nhu BTC):
+    nap nhanh doi thu dai hon -> reorg? True (height 12 -> 14)
+    tong cung sau reorg = 600.0 BGC (<= 21tr? True)
+
+[6] TIEU TIEN (chu ky KHANG LUONG TU) + memo cho AI/robot (sau reorg):
+    ThoA -> Bob: OK | Bob = 50 BGC (chu ky XMSS hop le)
+
+[7] CONG BANG (fair launch - diem mau chot phap ly):
+    so du: {'ThoA': 150.0, 'ThoB': 225.0, 'ThoC': 200.0, 'Bob': 50.0}
+    => KHONG ai duoc PHAT SAN 21tr; moi BGC deu DAO ra cong khai. Khong co nguoi BAN.
+       Day la ly do BTC khong bi coi la chung khoan - BGC-FL di dung con duong do.
+
+============================================================================
+ KET LUAN
+  - KHONG PREMINE: coin ra dan qua PoW + halving (~21tr), giong het BTC.
+  - PERMISSIONLESS: ai cung dao, khong authority, khong xin phep.
+  - 21tr cung: coinbase > subsidy bi tu choi; fork-choice theo chainwork; reorg an toan.
+  - Chu ky khang luong tu + memo AI/robot van giu.
+  *** LUU Y ***
+  - Demo dung target PoW co dinh (de); BTC that dieu chinh do kho moi 2016 khoi.
+  - Coinbase maturity (BTC: 100 khoi moi tieu duoc) chua ap - nen them cho production.
+  - Fair launch GIAM MANH rui ro chung khoan (khong nguoi ban) nhung KHONG mien tru;
+    chuyen tien/AML van co the ap. Van nen hoi luat su truoc khi cham toi nguoi My.
+============================================================================

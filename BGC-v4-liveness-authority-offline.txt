@@ -1,0 +1,90 @@
+======================================================================
+   BGC v4 - LIVENESS kieu Clique: 1 authority OFFLINE, mang VAN chay
+   Tac gia: Phu  |  D:\BitcoinCore\Bigcoin-BGC\
+======================================================================
+
+VAN DE (v3 con thieu): round-robin cung -> neu authority den luot OFFLINE thi
+chuoi KET (khong ai thay the). v4 giai quyet bang co che kieu Clique.
+
+CO CHE (bgc_engine.py):
+  1. KHOI TRAI LUOT HOP LE: khoi o chi so i do authority[i%N] ky la "dung luot"
+     (trong so 2). Neu nguoi do offline, authority KHAC co the ky "trai luot"
+     (trong so 1) de chuoi khong ket.
+  2. FORK-CHOICE THEO TONG TRONG SO (khong phai do dai): nhanh nhieu khoi "dung luot"
+     se nang hon -> khi nguoi dung luot online lai, trat tu chuan tu dong thang.
+  3. LUAT "KHONG KY LIEN TIEP" (recent-signer, LIMIT=N//2): 1 authority khong duoc
+     ky 2 khoi lien tiep -> chong doc chiem khi thieu nguoi; can DA SO online.
+  4. FINALITY (v3) van giu: khoi cu hon FINALITY khong bi reorg.
+
+KET QUA CHAY (bgc_demo4.py - TAT CA PASS):
+  - Auth1 offline: chuoi van cao len 10; Auth1 ky 0 khoi; Auth0 & Auth2 thay nhau
+    ky (xen ke, khong lien tiep); 21tr giu nguyen.
+  - Trong so: nhanh co Auth1 offline = 13; nhanh tat ca dung luot (Auth1 online) = 20
+    -> nhanh dung luot nang hon -> fork-choice uu tien trat tu chuan khi du nguoi.
+  - 3 NODE THAT: Auth1 khong ket noi; Auth0 & Auth2 van dao va dong bo (height 9,
+    cung tip, 21tr). 1/3 offline KHONG lam ket mang.
+
+*** LUU Y QUAN TRONG ***
+  - Chiu duoc toi da (N-1)//... thuc te: can DA SO authority online. N=3 chiu 1 offline;
+    qua nua offline -> mang ket (dung thiet ke: can da so trung thuc).
+  - Con thieu de thanh production: TIMEOUT THUC (bao lau moi duoc ky trai luot - o day
+    minh dieu khien tay trong demo), PHAT authority ly (khong hoat dong), va co che
+    THEM/BOT authority an toan.
+  - Day van la FEDERATION (tap authority cho phep), chua phai phi tap trung mo nhu
+    PoW/PoS. Day la danh doi co y: nhanh + don gian + tin cay nhom, doi lai do mo.
+
+FILE:
+  bgc_engine.py (v4) - block_weight(), _replay tra weight + recent-signer, fork-choice theo weight
+  bgc_demo4.py  (moi) - demo liveness (engine + 3 node that)
+
+CHAY: cd D:\BitcoinCore\Bigcoin-BGC & python bgc_demo4.py
+
+----------------------------------------------------------------------
+   KET XUAT bgc_demo4.py:
+----------------------------------------------------------------------
+==============================================================================
+ BGC DEMO 4 - LIVENESS: 1 authority OFFLINE, mang van chay (Clique-style)
+==============================================================================
+
+[1] 3 authority: ['Auth0', 'Auth1', 'Auth2'] | luat: khong ky lien tiep (LIMIT=1), dung luot=2 diem / trai luot=1
+
+[2] GIA LAP Auth1 OFFLINE. Dung signer: nguoi den luot neu online+khong recent, else nguoi khac:
+    khoi   den_luot   nguoi_ky   trang_thai
+       0      Auth0      Auth0 DUNG LUOT(2)
+       1      Auth1      Auth2 trai luot(1)
+       2      Auth2      Auth0 trai luot(1)
+       3      Auth0      Auth2 trai luot(1)
+       4      Auth1      Auth0 trai luot(1)
+       5      Auth2      Auth2 DUNG LUOT(2)
+       6      Auth0      Auth0 DUNG LUOT(2)
+       7      Auth1      Auth2 trai luot(1)
+       8      Auth2      Auth0 trai luot(1)
+       9      Auth0      Auth2 trai luot(1)
+    -> height=10, Auth1 (offline) ky 0 khoi, supply=21,000,000
+
+[3] Khi Auth1 ONLINE lai: nhanh DUNG LUOT (trong so cao) se thang nhanh trai luot:
+    tong trong so nhanh CO Auth1 offline (trai luot): 13
+    tong trong so nhanh TAT CA dung luot (Auth1 online): 20
+    -> nhanh dung luot nang hon (20 > 13) nen fork-choice uu tien no khi co the.
+
+[4] 3 NODE THAT: Auth1 KHONG ket noi (offline). Auth0 & Auth2 dao, cung quan sat:
+    Auth0: height=9 tip=0bcd478d9974..
+    Auth2: height=9 tip=0bcd478d9974..
+    -> 2/3 authority online van tien khoi & dong bo (Auth1 offline khong lam ket mang).
+
+[5] KIEM CHUNG:
+    [OK] liveness: Auth1 offline, chuoi van cao 10
+    [OK] weight: nhanh dung luot nang hon trai luot
+    [OK] real: 2/3 node online van dong bo + 21tr
+    [OK] recent-signer: khong ai ky 2 khoi lien tiep
+
+==============================================================================
+ KET QUA: TAT CA PASS
+  - LIVENESS: nguoi den luot offline -> nguoi khac ky trai luot -> mang KHONG ket.
+  - Khoi trai luot trong so 1 < dung luot 2 -> fork-choice uu tien trat tu chuan khi du nguoi.
+  - Luat khong-ky-lien-tiep: can DA SO authority online (N=3 chiu duoc 1 offline).
+  *** LUU Y ***
+  - Neu qua nua authority offline -> mang ket (dung thiet ke: can da so trung thuc online).
+  - That te can them: timeout thuc (khi nao duoc ky trai luot), phat authority khong hoat dong,
+    va co che them/bot authority. Day van la federation, chua phai phi tap trung mo.
+==============================================================================

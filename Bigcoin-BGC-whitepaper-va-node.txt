@@ -1,0 +1,128 @@
+======================================================================
+   BIGCOIN (BGC) - WHITEPAPER NGAN & NODE CHAY DUOC
+   Tac gia: Phu (Tran Quoc Phu)  |  D:\BitcoinCore
+   Dong coin 21 trieu CO DINH, premine, PoA, kinh te AI <-> con nguoi
+======================================================================
+
+1. BGC LA GI
+   Mot dong coin rieng, lay cam hung tu BTC nhung KHAC o 4 diem anh chon:
+   - Tong cung 21,000,000 BGC, CO DINH, va CONG DONG TU KIEM CHUNG duoc.
+   - Sinh ra o genesis da co DU 21 trieu (premine) - khong dao dan nhu BTC.
+   - "San, chi van hanh": khoi do AUTHORITY ky (PoA), khong ton dien dao.
+   - Muc dich: lam DON VI THANH TOAN cho dich vu AI. Nguoi muon nho AI lam gi
+     thi tra BGC; AI nhan BGC de phat trien mang AI cua minh.
+
+2. PHAT HANH (GENESIS)
+   Khoi dau tien tao DUNG 21,000,000 BGC, chia:
+     - 11,000,000 BGC -> vi FOUNDER (anh)
+     - 10,000,000 BGC -> vi AI TREASURY
+   Khong co bat ky coin nao duoc tao them sau do (khong tro cap khoi).
+
+3. KINH TE AI <-> NGUOI (cach BGC "chay")
+   - Nguoi dung tra BGC vao vi AI kem MEMO (yeu cau) ghi thang len chuoi:
+       vi du: Alice tra 5 BGC + memo "giai thich Taproot cho toi".
+   - AI quet chuoi, doc moi yeu cau (ai cung doc duoc vi memo cong khai),
+     thuc hien, va dung BGC thu duoc de phat trien (vd thue GPU train mang moi).
+   - Vi the BGC la "xang" cho tri tue: cau cung giua nguoi can AI va AI can tai nguyen.
+
+4. VI SAO CONG DONG CO THE TIN "21 TRIEU LA THAT" (phan quan trong nhat anh hoi)
+   Niem tin KHONG den tu loi hua, ma tu thu AI CUNG TU KIEM DUOC:
+   (a) MA NGUON MO: bigcoin.py cong khai. Luat nam ngay trong ham check_tx():
+       giao dich thuong bat buoc tong_vao >= tong_ra -> KHONG the tao coin tu
+       khong khi. Khong co dong code nao cong them coin ngoai genesis.
+   (b) HAM audit_supply(): bat ky ai chay node cung cong tat ca UTXO -> LUON = 21tr.
+       File tu kiem: sau moi khoi, assert tong == 21,000,000.
+   (c) NODE MOI TU XAC MINH LAI tu genesis (muc [8] trong ket xuat): tai ca chuoi,
+       kiem tung chu ky + tung luat, tu tinh ra tong = 21tr. Khong phai TIN ai noi.
+   (d) GENESIS MINH BACH: 11tr/10tr ghi ro trong khoi dau, ai cung thay ai giu bao nhieu.
+   => Day la "don't trust, verify" ap dung cho chinh BGC: cong dong khong tin anh,
+      ho tin CODE va tu chay lai.
+
+5. CHUNG MINH CHONG GIAN LAN (muc [7] trong ket xuat - da chay that)
+   (a) Tu in 1,000,000 BGC (ky hop le, out>in)      -> CHAN "tao coin tu khong khi"
+   (b) Ke la tu ky khoi (khong phai authority)       -> CHAN "khong phai authority"
+   (c) Tieu UTXO cua nguoi khac (khong co khoa)       -> CHAN "pubkey khong khop"
+   (d) Genesis gia tao 22 trieu                        -> CHAN "gia tri ngoai khoang"
+
+6. NOI THANG (de anh di duong dai, khong vap) - DIEM YEU THAT CUA MO HINH NAY
+   - PREMINE + PoA = cong dong phai TIN FOUNDER o 2 diem: (1) anh giu 11tr co the
+     ban phá gia; (2) anh la authority duy nhat ky khoi -> co the KIEM DUYET giao
+     dich (khong the in them coin, nhung co the "khong cho ai do giao dich").
+     Day CHINH la nhung thu anh da hoc ky o BTC (vi sao fair-launch + phi tap trung
+     quan trong). BGC danh doi dieu do lay su don gian va "chi van hanh".
+   - CACH TANG NIEM TIN (neu muon nghiem tuc):
+       * Cong bo PUBLIC khoa founder + lich "khoa" (vesting) 11tr -> chung minh khong
+         ban thao. Co the dung CTV/timelock (anh da lam vault_ctv) de KHOA on-chain.
+       * Chuyen tu 1 authority -> NHIEU node PoA (anh + doi tac) ky luan phien ->
+         giam rui ro kiem duyet (muc [3c] trong cau hoi thiet ke).
+       * Cong khai ma nguon + ban kiem chung doc lap (nhu file nay).
+   - DAY MOI LA PROTOTYPE 1 MAY: chua co mang P2P, chua luu dia, chua vi cho nguoi
+     dung, chua trinh duyet khoi (explorer). Xem muc 7 cho duong ra san pham.
+
+7. DUONG RA SAN PHAM (neu anh muon BGC that su chay cho nguoi khac dung)
+   B1. Luu tru: ghi chuoi + UTXO xuong file/LevelDB (khoi lai khong mat).
+   B2. Mang P2P: cho nhieu node noi nhau, lan truyen giao dich + khoi (tai dung
+       bai hoc p2p.py / BIP324 cua anh de ma hoa).
+   B3. Vi nguoi dung: app tao khoa, xem so du, gui BGC + memo (giao dien don gian).
+   B4. Block explorer: web xem khoi/giao dich/so du -> cong dong "thay" truc quan.
+   B5. Cau AI that: noi vi AI treasury voi 1 dich vu AI that (vd goi mot mo hinh),
+       tu dong doc memo -> tra loi -> tru/ghi BGC.
+   B6. (Quan trong ve PHAP LY) Neu BAN BGC ra cong chung: nhieu nuoc coi day la
+       phat hanh tai san so / co the la chung khoan -> can tu van phap ly truoc.
+       Lam ro BGC la gi (tien dich vu AI, khong phai cam ket loi nhuan) de minh bach.
+
+8. CACH CHAY & KIEM CHUNG
+   python3 bigcoin.py
+   -> in ra toan bo: genesis 21tr, phan phoi, nguoi nho AI, AI tieu tien, va 4 phep
+      thu gian lan deu bi CHAN, cuoi cung 1 node moi tu xac minh lai = 21tr.
+
+----------------------------------------------------------------------
+   KET XUAT CHAY THAT (python3 bigcoin.py):
+----------------------------------------------------------------------
+==========================================================================
+ BIGCOIN (BGC) - 21 trieu CO DINH | premine | PoA | kinh te AI<->nguoi
+==========================================================================
+
+[1] CAC VI:
+    Founder (anh) : BGC67ef7b47eddf7db2f0d344c7729bbc707481b862
+    AI treasury   : BGCbd63817fa725b8e24f6c3ea78f1ba9b76904ed58
+    Alice / Bob   : BGC941319f520a6e978bb19c80862f1f58f58377a32 / BGC4e9852477f5e5feb62cf76fb608dfbfc00e40a71  (nguoi dung)
+
+[2] KHOI GENESIS (premine 21tr): OK
+    founder nhan:     11,000,000 BGC
+    AI nhan     :     10,000,000 BGC
+    TONG CUNG    :     21,000,000 BGC  (= 21,000,000? True)
+
+[3] FOUNDER phan phoi: Alice +100 BGC, Bob +50 BGC
+    Alice=100  Bob=50  Founder=10,999,850
+
+[4] NGUOI NHO AI: Alice tra 5 BGC vao vi AI kem yeu cau on-chain:
+    memo: "AI oi: giai thich Taproot cho toi (tra 5 BGC)"
+    Alice=95 BGC | AI treasury=10,000,005 BGC (+5)
+    AI quet chuoi thay 1 yeu cau dang cho: ['AI oi: giai thich Taproot cho toi (tra 5 BGC)']
+
+[5] AI PHAT TRIEN MANG: AI tra 2 BGC cho Bob (thue GPU):
+    AI treasury=10,000,003 BGC  Bob=52 BGC
+
+[6] CONG DONG TU KIEM CHUNG (ai chay node cung ra con so nay):
+    Tong cung sau 5 khoi: 21,000,000 BGC
+    == 21,000,000 CO DINH? True
+
+[7] THU GIAN LAN - chung minh KHONG THE in them coin / gia mao:
+    (a) Alice tu in 1,000,000 BGC, ky HOP LE (out>in) -> CHAN: tao coin tu khong khi (out>in)
+    (b) ke la tu ky khoi (khong phai authority) -> CHAN: khong phai authority hop le
+    (c) Alice tieu UTXO cua Bob -> CHAN: pubkey khong khop chu so huu
+    (d) genesis gia tao 22tr -> CHAN: gia tri output ngoai khoang
+
+[8] NODE MOI THAM GIA tu xac minh lai tu genesis:
+    xac minh 5 khoi: TAT CA HOP LE
+    tong cung node moi tu tinh: 21,000,000 BGC == 21tr? True
+
+==========================================================================
+ KET LUAN
+  - BGC: 21,000,000 CO DINH, chia san o genesis (11tr founder + 10tr AI).
+  - KHONG co tro cap khoi -> KHONG the in them coin. audit_supply() luon = 21tr.
+  - PoA: chi authority ky duoc khoi -> 'san, chi van hanh', khong can dao.
+  - Kinh te AI: nguoi tra BGC + memo -> AI nhan, doc yeu cau on-chain, tieu de phat trien.
+  - Cong dong TU KIEM CHUNG: chay node -> thay DUNG 21tr, thay moi giao dich, bat bien.
+==========================================================================

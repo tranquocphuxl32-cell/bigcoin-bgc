@@ -1,0 +1,20 @@
+# wallets & chain data (NEVER commit a wallet file)
+my_bgc_wallet.json
+*_wallet.json
+bgcfl_data/
+bgcfl_genesis.json
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# build artifacts
+build/
+dist/
+*.spec~
+
+# os
+.DS_Store
+Thumbs.db

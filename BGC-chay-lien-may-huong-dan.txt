@@ -1,0 +1,69 @@
+======================================================================
+   BGC - CHAY LIEN MAY (multi-machine): bgc_init.py + run_node.py
+   Tac gia: Phu  |  D:\BitcoinCore\Bigcoin-BGC\
+======================================================================
+
+MUC TIEU: dua BGC tu "nhieu tien trinh 1 may" sang "nhieu MAY THAT" tren mang.
+Code P2P da la TCP that; 2 file nay chi them lop KHOI TAO + CHAY tien dung.
+
+HAI FILE:
+  bgc_init.py  - chay MOT LAN de "khai sinh" mang:
+     * tao vi authority (auth0..) + vi AI (khang luong tu)
+     * tao GENESIS CHUAN (11tr founder KHOA vesting + 10tr AI), ky, luu genesis.json
+       (ts co dinh -> genesis TAT DINH, moi may dung CHUNG 1 file)
+     * sinh cau hinh tung may: node_auth0.json .. + node_observer.json
+     Chay:  python bgc_init.py 3        (3 authority)
+     Ket qua nam trong thu muc bgc_net/
+
+  run_node.py  - chay 1 node tu cau hinh (tren moi may):
+     python run_node.py bgc_net/node_auth0.json
+     * nap genesis.json -> dong bo tu do
+     * tu noi peers (reconnect dinh ky 5s neu peer chua len)
+     * neu la authority: tu dao luan phien (timeout liveness)
+     * in trang thai 3s/lan + sinh explorer.html; nhan lenh ban phim:
+         bal                      -> xem so du vi minh
+         send <dia_chi> <so> [memo] -> gui BGC (phat len mang)
+         peers                    -> so peer + height
+         quit                     -> dung node
+
+CAC BUOC CHAY LIEN MAY (vd 3 may trong LAN nha):
+  1. Chay 1 lan:  python bgc_init.py 3
+  2. Copy sang MOI may: thu muc bgc_net/  +  cac file .py
+     (bgc_engine, bgc_node, bgc_p2p, bgc_secure, bgc_wallet, bgc_explorer,
+      bigcoin_pq, btclib, run_node). Moi may giu auth cua minh; KHONG chia se
+      file auth*.wallet cho may khac.
+  3. Sua 'peers' trong node_authX.json: thay <IP_may_khac> bang IP LAN that
+     (vd 192.168.1.20:9333). Mo cong firewall cho listen_port.
+  4. Moi may:  python run_node.py bgc_net/node_authX.json
+  5. Cac node tu noi, dong bo tu genesis, authority tu dao luan phien.
+
+DA KIEM CHUNG (mo phong 3 may tren localhost, cong 9333/9334/9335):
+  - 3 node tu noi (P2P MA HOA), tu dao luan phien.
+  - Hoi tu: ca 3 node cung 15 khoi, cung tip, supply = 21,000,000 (OK).
+  - Trang thai: "height=14 peers=4 supply=21,000,000 OK tip=7667d63f..".
+  (localhost voi IP khac nhau = y het nhieu may that, chi doi IP trong peers.)
+
+*** LUU Y QUAN TRONG ***
+  1. genesis.json + danh sach authorities PHAI GIONG HET tren moi may. Khac ->
+     khong hoi tu (khac chuoi). Day la "hardcoded genesis" giong moi coin that.
+  2. Bao mat khoa authority: file auth*.wallet la KHOA KY KHOI. Giu rieng tung may,
+     khong copy lung tung. Mat/lo = mat quyen authority do.
+  3. Vi khang luong tu stateful: KHONG chay 2 ban cung 1 vi (se ky trung leaf -> lo khoa).
+  4. Chay WAN (ngoai Internet) can mo cong/NAT + nen them xac thuc peer; thu LAN truoc.
+  5. Van la FEDERATION PoA (tap authority), can DA SO online. Chua phai phi tap trung mo.
+  6. UNLOCK trong bgc_init dang = 0; truoc khi "phat hanh that" doi thanh chieu cao
+     mo khoa that (vd vai nam) de khoa 11tr founder (minh bach cam ket).
+
+----------------------------------------------------------------------
+   KET XUAT bgc_init.py + chay thu 3 node (localhost):
+----------------------------------------------------------------------
+### python bgc_init.py 3
+(da tao vi, genesis.json, cau hinh - xem bgc_net/)
+
+### chay 3 node (localhost 9333/9334/9335), 14s:
+auth0: 15 khoi
+auth1: 15 khoi
+auth2: 15 khoi
+trang thai auth0:
+[auth0] height=9 peers=2 supply=21,000,000 OK tip=7a653271c262..
+[auth0] height=14 peers=4 supply=21,000,000 OK tip=7667d63f0b97..

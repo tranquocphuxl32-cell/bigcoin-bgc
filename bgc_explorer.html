@@ -1,0 +1,32 @@
+<!doctype html><html lang=vi><head><meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1"><title>BGC Explorer</title>
+<style>
+:root{--bg:#0d1117;--card:#161b22;--line:#30363d;--tx:#8b949e;--ok:#3fb950;--accent:#58a6ff}
+@media(prefers-color-scheme:light){:root:not([data-theme=dark]){--bg:#f6f8fa;--card:#fff;--line:#d0d7de;--tx:#57606a;--ok:#1a7f37;--accent:#0969da}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#c9d1d9;font:15px/1.5 system-ui,Segoe UI,Roboto,sans-serif;padding:16px}
+@media(prefers-color-scheme:light){body{color:#1f2328}}
+h1{font-size:22px;margin:0 0 4px}.sub{color:var(--tx);margin-bottom:16px}
+.cap{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+.big{font-size:30px;font-weight:700;color:var(--ok)}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+table{width:100%;border-collapse:collapse}td{padding:6px 8px;border-bottom:1px solid var(--line)}
+.blk{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:12px}
+.blk h3{margin:0 0 8px;font-size:16px}.tx{border-top:1px dashed var(--line);padding:8px 0;color:var(--tx)}
+.tx ul{margin:6px 0 0;padding-left:18px;color:#c9d1d9}@media(prefers-color-scheme:light){.tx ul{color:#1f2328}}
+code{background:rgba(110,118,129,.2);padding:1px 5px;border-radius:5px;font-size:12px}em{color:var(--accent);font-style:normal}
+</style></head><body>
+<h1>⬡ Bigcoin (BGC) Explorer</h1>
+<div class=sub>Dong tien khang luong tu cho kinh te AI – robot · tong cung CO DINH, ai cung tu kiem</div>
+<div class=cap>
+  <div>Tong cung (tu cong tu UTXO):</div>
+  <div class=big>21,000,000 / 21,000,000 BGC ✓ CO DINH</div>
+  <div class=sub>Chieu cao: 8 khoi · Chu ky: hash-based (khang luong tu) · Dong thuan: PoA</div>
+</div>
+<div class=grid>
+  <div class=cap><h3>So du cac vi</h3><table><tr><td><code>BGCQ43a0d58c52d69d0333087b2982…</code></td><td style='text-align:right'>11,000,000 BGC</td></tr><tr><td><code>BGCQ51959599ad4f223ba8346ce32c…</code></td><td style='text-align:right'>9,999,905 BGC</td></tr><tr><td><code>BGCQ5607f706f871623ba6e025f71f…</code></td><td style='text-align:right'>95 BGC</td></tr></table></div>
+  <div class=cap><h3>Cach tu kiem</h3><p class=sub>Chay node BGC cua ban → tu cong lai UTXO → phai ra dung 21,000,000. Coin founder co 🔒 (lock) hien ngay tren giao dich genesis. Khong tin — hay tu verify.</p></div>
+</div>
+<h2>Chuoi khoi</h2>
+<div class=blk><h3>Khối #0 <small><code>62e681203e16d0b3…</code></small></h3><div class=tx><b>⛏ coinbase/genesis</b> <code>74dae4bd8ff971ce…</code><ul><li>11,000,000 BGC → <code>BGCQ43a0d58c52d69d0333…</code> 🔒khoa→khoi 8 <em>“founder 11tr - KHOA vesting”</em></li><li>10,000,000 BGC → <code>BGCQ51959599ad4f223ba8…</code> <em>“AI treasury 10tr”</em></li></ul></div></div><div class=blk><h3>Khối #1 <small><code>6c1503733674d48d…</code></small></h3><div class=tx><b>giao dich</b> <code>00300c5834c24296…</code><ul><li>100 BGC → <code>BGCQ5607f706f871623ba6…</code> <em>“AI cap von cho nguoi dung”</em></li><li>9,999,900 BGC → <code>BGCQ51959599ad4f223ba8…</code></li></ul></div></div><div class=blk><h3>Khối #2 <small><code>1e7ccd113494c649…</code></small></h3><div class=tx><b>giao dich</b> <code>9fff6df04dcd5c1d…</code><ul><li>5 BGC → <code>BGCQ51959599ad4f223ba8…</code> <em>“AI oi giai thich XMSS (tra 5 BGC)”</em></li><li>95 BGC → <code>BGCQ5607f706f871623ba6…</code></li></ul></div></div><div class=blk><h3>Khối #3 <small><code>a814186ebf476a64…</code></small></h3></div><div class=blk><h3>Khối #4 <small><code>09f9dbf5027a977e…</code></small></h3></div><div class=blk><h3>Khối #5 <small><code>f882751b6192324c…</code></small></h3></div><div class=blk><h3>Khối #6 <small><code>693c13b8591a0efb…</code></small></h3></div><div class=blk><h3>Khối #7 <small><code>4b122a0de1b38af1…</code></small></h3></div>
+<div class=sub style=margin-top:16px>Trang nay sinh tu chuoi that; mo lai bat cu luc nao bang bgc_explorer.</div>
+</body></html>

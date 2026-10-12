@@ -1,0 +1,96 @@
+======================================================================
+   BIGCOIN-FAST - TOC DO GIAO DICH ~1000x BTC (do that + ngoai suy trung thuc)
+   Tac gia: Phu  |  D:\BitcoinCore\Bigcoin-BGC\  |  dung engine bigcoin_pq.py (cung folder)
+======================================================================
+
+VI SAO BTC CHAM (2 tran trong giao thuc)
+  (1) Thoi gian khoi ~600s (PoW dieu chinh do kho) -> xac nhan dau ~10 phut.
+  (2) Kich thuoc khoi ~1-4MB -> chi ~3-7 giao dich/giay (TPS).
+BGC BO CA HAI:
+  (1) PoA: authority ky khoi NGAY, khong dao -> khoi 0.6s, xac nhan gan tuc thi.
+  (2) Khong bi gioi han PoW -> khoi lon; tran thuc su chuyen thanh TOC DO XAC MINH.
+
+KET QUA DO THAT (tren may 2 loi, Python - co tinh khiem ton)
+  - DO TRE xac nhan: BGC ~8 ms vs BTC 600s  -> nhanh ~77,000x (PoA tuc thi).
+    (Chi can thoi gian khoi 0.6s cung da nhanh 1,000x; PoW cua BTC khong the duoi 10 phut.)
+  - THONG LUONG: nut that la XAC MINH chu ky (so cai thuan ~4 trieu TPS, khong phai van de).
+      * 1 loi Python : ~1,700 TPS  (~250x BTC)
+      * 2 loi Python : ~3,400 TPS  (~485x BTC)  <- do THAT tren may nay
+  - NGOAI SUY trung thuc: xac minh chu ky la viec song song hoan hao.
+      * 8 loi Python  ~2,000x | native(C/Rust ~30x) ~60,000x BTC
+      * 32 loi Python ~8,000x | native ~240,000x BTC
+      Chi can ~4 loi Python (hoac native) la vuot 1,000x (7,000 TPS).
+
+THAM SO BGC de dat >=1000x (muc [4])
+  thoi gian khoi 0.6s | suc chua 4,200 tx/khoi -> 7,000 TPS = 1,000x BTC.
+  Node phai xac minh 4,200 chu ky/0.6s -> can native crypto + nhieu loi (nhu ngoai suy).
+  Kien truc KHONG chan; chi can suc tinh toan.
+
+21 TRIEU VAN CO DINH du nhanh the nao
+  Toc do = so khoi/giay, KHONG lien quan phat hanh coin. Tong cung luon = 21tr
+  (file do xong van assert 21,000,000). Nhanh khong de ra them coin.
+
+*** DANH DOI PHAI BIET (quan trong) ***
+  1. Chu ky khang luong tu (XMSS) NANG (~KB) + xac minh cham hon chu ky thuong.
+     1000x TPS + PQ => khoi RAT LON: vd 7,000 tx x ~3KB = ~21MB moi 0.6s = ~35 MB/s
+     bang thong. Can native crypto, nhieu loi, duong truyen manh. Day la GIA cua
+     "vua nhanh vua khang luong tu".
+  2. PoA cho toc do nhung DOI LAI tap trung (authority ky khoi). NHANH <-> PHI TAP
+     TRUNG la danh doi co ban: BTC cham vi phi tap trung; BGC nhanh vi tap trung hon.
+  3. Khoi lon -> it nguoi du suc chay node day du -> giam so nguoi kiem tra doc lap
+     (chinh la thu bao ve "21tr that"). Can can nhac ky neu muon cong dong tu verify.
+  4. Huong giam nhe: SPHINCS+ (PQ, khong trang thai) hoac nghien cuu GOP chu ky
+     (signature aggregation) de khoi nho lai.
+
+CACH CHAY (can bigcoin_pq.py cung thu muc):
+  python3 bigcoin_fast.py
+
+----------------------------------------------------------------------
+   KET XUAT CHAY THAT (python3 bigcoin_fast.py):
+----------------------------------------------------------------------
+==============================================================================
+ BIGCOIN-FAST - do toc do giao dich (muc tieu ~1000x BTC), khang luong tu, 21tr
+==============================================================================
+
+  May do: 2 loi CPU (Python). BTC moc so sanh: 7 TPS, xac nhan 600s.
+
+[1] DO TRE XAC NHAN (time-to-first-confirmation):
+    BGC: giao dich -> xac nhan trong 7.7 ms (PoA ky khoi ngay)
+    BTC: 600s (10 phut).  -> BGC nhanh ~77,471x ve DO TRE
+    (dat thoi gian khoi 0.6s cung du nhanh 1,000x; PoW cua BTC khong the duoi 10 phut.)
+
+[2] DO THONG LUONG (TPS) - nut that la XAC MINH chu ky, do that:
+    do toc do xac minh tren 2000 lan (chi phi moi lan nhu nhau)...
+    xac minh XMSS 1 loi     : 1,976 TPS  (= 282x BTC)
+    xac minh XMSS 2 loi     : 3,395 TPS  (= 485x BTC)  <- do THAT tren may 2 loi
+    so cai thuan (UTXO)     : 3,809,073 TPS  (khong phai nut that)
+
+[3] NGOAI SUY ra san xuat (trung thuc, khong phong dai):
+    server 8 loi  : Python ~15,808 TPS = 2,258x | native(~30x) ~474,226 TPS = 67,747x BTC
+    server 32 loi : Python ~63,230 TPS = 9,033x | native(~30x) ~1,896,905 TPS = 270,986x BTC
+    => Chi can 3.5 loi (Python) hoac native la vuot 1000x (7,000 TPS).
+       Tren may 2 loi nay da do duoc 485x; may/ server manh hon dat 1000x+ de dang.
+
+[4] THAM SO BGC de dat >=1000x BTC:
+    thoi gian khoi : 0.6s  (PoA, khong dao)
+    suc chua khoi  : 4,200 giao dich/khoi
+    => thong luong : 7,000 TPS = 1,000x BTC
+    (node phai xac minh 4,200 chu ky trong 0.6s -> can native crypto + nhieu loi,
+     dung nhu [3] ngoai suy. Kien truc KHONG chan; chi can suc tinh toan.)
+
+[5] 21tr CO DINH du nhanh the nao: tong cung = 21,000,000 BGC (=21tr? True)
+    Toc do KHONG dong den tong cung - no chi la so khoi/giay, khong phai phat hanh coin.
+
+==============================================================================
+ KET LUAN & LUU Y CHO ANH
+  - DO TRE: BGC xac nhan ~8ms vs BTC 600s -> nhanh ~77,471x (PoA tuc thi).
+  - THONG LUONG: do THAT 485x tren 2 loi Python; ngoai suy native/nhieu loi -> 1000x+.
+  - 21tr VAN CO DINH: toc do la so khoi/giay, khong lien quan phat hanh coin.
+  *** DANH DOI PHAI BIET ***
+  1. Chu ky khang luong tu (XMSS) NANG (~KB) + XAC MINH cham hon chu ky thuong nhieu.
+     1000x TPS + PQ => khoi RAT LON (vd 7000 tx x ~3KB = ~21MB/0.6s = ~35 MB/s bang thong).
+     Can: native crypto, nhieu loi, va duong truyen manh. Day la gia cua 'vua nhanh vua PQ'.
+  2. PoA cho toc do nhung DOI LAI tap trung (authority ky). Nhanh <-> phi tap trung la danh doi.
+  3. Khoi lon -> it nguoi chay duoc node day du -> giam phi tap trung kiem tra. Can can nhac.
+  4. Muon vua PQ vua nhe: huong SPHINCS+ (khong trang thai) hoac nghien cuu gop chu ky (aggregation).
+==============================================================================
