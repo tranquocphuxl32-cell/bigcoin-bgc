@@ -8,12 +8,12 @@
 #         python bgc_app.py --peers IP:9333          (join a network)
 #         python bgc_app.py --web-port 7000 --port 9333 --name An
 # =====================================================================
-import os, sys, json, time, threading, argparse, webbrowser, functools
+import os, sys, json, time, threading, argparse, webbrowser, functools, secrets, hmac
 print=functools.partial(print, flush=True)
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import run_miner as R
-from bgcfl_engine import COIN, MAX_SUPPLY, subsidy, MATURITY
+from bgcfl_engine import COIN, MAIN, REGTEST
 from bgcfl_wallet import Wallet
 try:
     import qrcode, qrcode.image.svg               # tao ma QR cho dia chi (tuy chon)
@@ -28,6 +28,9 @@ if getattr(sys, "frozen", False):
 else:
     HERE=os.path.dirname(os.path.abspath(__file__))
 NODE=None; PEERS_CFG=[]
+# Secret for this run: only the page we serve knows it, so other websites open in the same
+# browser cannot call /api/send (CSRF). The Host check below blocks DNS-rebinding.
+TOKEN=secrets.token_urlsafe(32); WEB_PORT=7000
 
 # ---------------------------------------------------------------- trang HTML
 PAGE=r"""<!doctype html><html lang="de" data-theme="dark"><head>
@@ -221,45 +224,58 @@ function render(){const t=T[L],d=ST;if(!d.address)return;
  (d.events||[]).slice().reverse().forEach(e=>{const row=document.createElement("div");
    const ts=new Date(e.t*1000).toLocaleTimeString();row.textContent=ts+"  "+evtext(e);log.appendChild(row)});
 }
-function renderHist(items){const t=T[L],box=document.getElementById("hist");box.innerHTML="";
- if(!items||!items.length){box.innerHTML='<div class="l2">'+t.hist_empty+'</div>';return}
- items.forEach(it=>{const row=document.createElement("div");row.className="it";
+function el(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+function renderHist(items){const t=T[L],box=document.getElementById("hist");box.textContent="";
+ if(!items||!items.length){box.appendChild(el("div","l2",t.hist_empty));return}
+ items.forEach(it=>{const row=el("div","it");
    let label,sign,cls;
    if(it.kind==="mined"){label=t.hist_mined;sign="+";cls="pos"}
-   else if(it.kind==="received"){label=t.hist_received+" "+(it.party||"").slice(0,16)+"…";sign="+";cls="pos"}
-   else{label=t.hist_sent+" "+(it.party||"").slice(0,16)+"…";sign="−";cls="neg"}
+   else if(it.kind==="received"){label=t.hist_received+" "+String(it.party||"").slice(0,16)+"…";sign="+";cls="pos"}
+   else{label=t.hist_sent+" "+String(it.party||"").slice(0,16)+"…";sign="−";cls="neg"}
    const memo=it.memo?(" · "+it.memo):"";
-   row.innerHTML='<div><div>'+label+'</div><div class="l2">#'+it.h+memo+'</div></div>'+
-     '<div class="amt '+cls+'">'+sign+(+it.amount).toLocaleString(undefined,{maximumFractionDigits:4})+' BGC</div>';
+   const left=el("div");left.appendChild(el("div",null,label));left.appendChild(el("div","l2","#"+it.h+memo));
+   row.appendChild(left);
+   row.appendChild(el("div","amt "+cls,sign+(+it.amount).toLocaleString(undefined,{maximumFractionDigits:4})+" BGC"));
    box.appendChild(row)});
 }
-async function pollHist(){try{const r=await fetch("/api/history");renderHist(await r.json())}catch(e){}}
-async function poll(){try{const r=await fetch("/api/status");ST=await r.json();render()}catch(e){}}
-async function post(u,b){const r=await fetch(u,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b||{})});return r.json()}
+const TOKEN="__BGC_TOKEN__";
+const H={"X-BGC-Token":TOKEN};
+async function pollHist(){try{const r=await fetch("/api/history",{headers:H});renderHist(await r.json())}catch(e){}}
+async function poll(){try{const r=await fetch("/api/status",{headers:H});ST=await r.json();render()}catch(e){}}
+async function post(u,b){const r=await fetch(u,{method:"POST",headers:Object.assign({"Content-Type":"application/json"},H),body:JSON.stringify(b||{})});return r.json()}
 document.getElementById("lang").onchange=e=>{L=e.target.value;localStorage&&localStorage.setItem("bgc_lang",L);tr()};
 document.getElementById("btn_mine").onclick=async e=>{const on=e.target.dataset.on==="1";await post("/api/mine",{on:!on});poll()};
 document.getElementById("btn_copy").onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(ST.address);toast(T[L].copied)};
 document.getElementById("btn_send").onclick=async()=>{const to=document.getElementById("to").value.trim(),amt=document.getElementById("amt").value,memo=document.getElementById("memo").value;
- if(!to||!amt)return;const r=await post("/api/send",{to,amount:+amt,memo});toast(r.ok?T[L].btn_send+" ✓":(T[L].err+": "+r.msg));if(r.ok){document.getElementById("to").value="";document.getElementById("amt").value=""}poll()};
+ if(!to||!amt)return;const r=await post("/api/send",{to,amount:amt,memo});toast(r.ok?T[L].btn_send+" ✓":(T[L].err+": "+r.msg));if(r.ok){document.getElementById("to").value="";document.getElementById("amt").value=""}poll()};
 document.getElementById("btn_connect").onclick=async()=>{const p=document.getElementById("peer").value.trim();if(!p)return;await post("/api/connect",{peer:p});try{localStorage&&localStorage.setItem("bgc_peer",p)}catch(e){}toast("OK");poll()};
 try{const s=localStorage&&localStorage.getItem("bgc_lang");if(s){L=s;document.getElementById("lang").value=s}}catch(e){}
 try{const p=localStorage&&localStorage.getItem("bgc_peer");if(p)document.getElementById("peer").value=p}catch(e){}
 // QR dia chi: hien neu server co; an ca o neu khong co (204/loi)
 const _qr=document.getElementById("qr");
 _qr.onerror=()=>{document.getElementById("qrbox").style.display="none"};
-_qr.src="/api/qr?"+Date.now();
+_qr.src="/api/qr?k="+encodeURIComponent(TOKEN)+"&"+Date.now();
 tr();poll();pollHist();setInterval(poll,2000);setInterval(pollHist,5000);
 </script></body></html>"""
 
 # ---------------------------------------------------------------- API
 def status():
-    n=NODE; ch=n.chain; w=n.w; h=ch.height()
-    return {"height":h,"peers":len(n.peers),"supply":ch.audit_supply()/COIN,"maxsupply":MAX_SUPPLY/COIN,
-            "reward":subsidy(h)/COIN,"balance":w.balance(ch),"spendable":w.balance_spendable(ch),
-            "address":n.addr,"remaining":w.remaining(),"mining":n.mining,"chainwork":ch.chainwork(),
-            "name":n.name,"port":n.port,"maturity":MATURITY,"events":n.events[-60:]}
+    n=NODE; ch=n.chain; w=n.w; h=ch.height(); p=ch.p
+    return {"height":h,"peers":len(n.peers),"supply":ch.audit_supply()/COIN,"maxsupply":p.max_supply()/COIN,
+            "reward":p.subsidy(h)/COIN,"balance":w.balance(ch),"spendable":w.balance_spendable(ch),
+            "address":n.addr,"remaining":w.remaining(),"mining":n.mining,"chainwork":str(ch.chainwork()),
+            "name":n.name,"port":n.port,"maturity":p.maturity,"net":p.name,"hashrate":round(n.hashrate),
+            "events":n.events[-60:]}
 
+_HIST={"tip":None,"items":[]}
 def history(limit=30):
+    """Lich su giao dich cua vi (cache theo dinh chuoi, chi quet lai khi co khoi moi)."""
+    tip=NODE.chain.tip()
+    if _HIST["tip"]!=tip:
+        _HIST["items"]=_scan_history(limit); _HIST["tip"]=tip
+    return _HIST["items"]
+
+def _scan_history(limit):
     """Lich su giao dich cua vi: da dao / da nhan / da gui (quet toan chuoi)."""
     ch=NODE.chain; me=NODE.addr
     outmap={}                                   # (txid,vout) -> (value,addr)
@@ -290,11 +306,35 @@ class Handler(BaseHTTPRequestHandler):
     def _send(s, code, body, ctype="application/json"):
         b=body if isinstance(body,bytes) else body.encode()
         s.send_response(code); s.send_header("Content-Type",ctype+"; charset=utf-8")
-        s.send_header("Content-Length",str(len(b))); s.end_headers(); s.wfile.write(b)
+        s.send_header("Content-Length",str(len(b)))
+        s.send_header("Cache-Control","no-store"); s.send_header("X-Frame-Options","DENY")
+        s.send_header("Referrer-Policy","no-referrer")
+        s.end_headers(); s.wfile.write(b)
+    def _read_body(s):
+        """Read the whole request body first: replying while it is unread makes Windows reset the connection."""
+        try: n=int(s.headers.get("Content-Length",0))
+        except ValueError: n=-1
+        if not 0<=n<=65536: s.close_connection=True; return None
+        return s.rfile.read(n)
     def _json(s):
-        n=int(s.headers.get("Content-Length",0));
-        return json.loads(s.rfile.read(n) or b"{}")
+        d=json.loads(s._body or b"{}")
+        if type(d) is not dict: raise ValueError("bad request")
+        return d
+    def _host_ok(s):
+        """Only answer requests addressed to this machine (blocks DNS-rebinding attacks)."""
+        return s.headers.get("Host","") in {f"localhost:{WEB_PORT}", f"127.0.0.1:{WEB_PORT}", f"[::1]:{WEB_PORT}"}
+    def _auth_ok(s):
+        k=s.headers.get("X-BGC-Token","")
+        if not k and "?" in s.path:
+            from urllib.parse import parse_qs
+            k=(parse_qs(s.path.split("?",1)[1]).get("k") or [""])[0]
+        return hmac.compare_digest(k.encode(), TOKEN.encode())
     def do_GET(s):
+        if not s._host_ok(): s._send(403,"{}"); return
+        if s.path=="/" or s.path.startswith("/index"):
+            s._send(200,PAGE.replace("__BGC_TOKEN__",TOKEN),"text/html"); return
+        if not s.path.startswith("/api/"): s._send(404,"{}"); return
+        if not s._auth_ok(): s._send(403,"{}"); return
         if s.path.startswith("/api/status"): s._send(200,json.dumps(status()))
         elif s.path.startswith("/api/history"): s._send(200,json.dumps(history()))
         elif s.path.startswith("/api/qr"):
@@ -304,9 +344,12 @@ class Handler(BaseHTTPRequestHandler):
             q.add_data(NODE.addr); q.make(fit=True)
             buf=io.BytesIO(); q.make_image(image_factory=qrcode.image.svg.SvgPathImage).save(buf)
             s._send(200, buf.getvalue(), "image/svg+xml")
-        elif s.path=="/" or s.path.startswith("/index"): s._send(200,PAGE,"text/html")
         else: s._send(404,"{}")
     def do_POST(s):
+        s._body=s._read_body()
+        if s._body is None: s._send(413,"{}"); return
+        if not s._host_ok() or not s._auth_ok(): s._send(403,"{}"); return
+        if not s.headers.get("Content-Type","").startswith("application/json"): s._send(415,"{}"); return
         try:
             if s.path=="/api/mine":
                 on=s._json().get("on",True)
@@ -314,9 +357,10 @@ class Handler(BaseHTTPRequestHandler):
                 elif not on and NODE.mining: NODE.mining=False; NODE._log("stop")
                 s._send(200,json.dumps({"ok":True}))
             elif s.path=="/api/send":
-                d=s._json(); tx=NODE.w.send(NODE.chain,d["to"],float(d["amount"]),memo=d.get("memo","") or "send")
+                d=s._json(); to=str(d.get("to","")).strip(); amount=str(d.get("amount","")).strip()
+                tx=NODE.w.send(NODE.chain,to,amount,memo=str(d.get("memo","") or "send"))
                 ok,m=NODE.submit_tx(tx)
-                if ok: NODE._log("send",amount=float(d["amount"]),to=d["to"])
+                if ok: NODE._log("send",amount=amount,to=to)
                 s._send(200,json.dumps({"ok":ok,"msg":m}))
             elif s.path=="/api/connect":
                 d=s._json(); host,port=d["peer"].rsplit(":",1); NODE.connect(host,int(port))
@@ -327,7 +371,7 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(s,*a): pass
 
 def main():
-    global NODE, PEERS_CFG
+    global NODE, PEERS_CFG, WEB_PORT
     ap=argparse.ArgumentParser(description="BGC Miner App (giao dien trinh duyet).")
     ap.add_argument("--web-port", type=int, default=7000)
     ap.add_argument("--port", type=int, default=9333)
@@ -335,27 +379,23 @@ def main():
     ap.add_argument("--peers", default="")
     ap.add_argument("--datadir", default=os.path.join(HERE,"bgcfl_data"))
     ap.add_argument("--wallet", default=os.path.join(HERE,"my_bgc_wallet.json"))
-    ap.add_argument("--genesis", default=os.path.join(HERE,"bgcfl_genesis.json"))
+    ap.add_argument("--regtest", action="store_true", help="mang thu nghiem rieng (do kho thap, coin KHONG co gia tri)")
     ap.add_argument("--no-open", action="store_true")
     a=ap.parse_args()
 
     os.makedirs(a.datadir, exist_ok=True)
+    print("[khoi dong] dang nap vi va kiem tra lai chuoi da luu...")
     w=Wallet(a.wallet)
-    NODE=R.MinerNode(a.name, w, a.datadir, a.port)
-    R.load_genesis(NODE.chain, a.genesis)
-    PEERS_CFG=[p.strip() for p in a.peers.split(",") if p.strip() and "<" not in p]
-    def reconnector():
-        while not NODE.stop:
-            for p in PEERS_CFG:
-                try: host,port=p.rsplit(":",1); NODE.connect(host,int(port))
-                except Exception: pass
-            time.sleep(5)
-    if PEERS_CFG: threading.Thread(target=reconnector,daemon=True).start()
+    NODE=R.MinerNode(a.name, w, a.datadir, a.port, params=REGTEST if a.regtest else MAIN)
+    R.load_genesis(NODE.chain)
+    PEERS_CFG=R.parse_peers(a.peers)
+    if PEERS_CFG: R.start_reconnector(NODE, PEERS_CFG)
 
+    WEB_PORT=a.web_port
     srv=ThreadingHTTPServer(("127.0.0.1",a.web_port),Handler)
     url=f"http://localhost:{a.web_port}"
     print("="*68); print(" BGC Miner App dang chay.  Mo trinh duyet:", url); print("="*68)
-    print(f"   vi: {NODE.addr}")
+    print(f"   mang: {NODE.chain.p.name} | vi: {NODE.addr}")
     print(f"   cong P2P: {NODE.port} | seed: {PEERS_CFG or '(dao solo)'}")
     if not a.no_open:
         try: threading.Timer(1.0, lambda: webbrowser.open(url)).start()

@@ -58,9 +58,12 @@ def root_from(leaf, idx, path):
         h=H(sib+h) if idx&1 else H(h+sib); idx//=2
     return h
 
+MAX_XMSS_H=20                               # tallest tree a verifier accepts (2^20 signatures)
+
 class XmssKey:
     """A post-quantum address = the Merkle root over 2^h WOTS one-time keys."""
     def __init__(s, master=None, h=4):
+        if not 1<=h<=MAX_XMSS_H: raise ValueError(f"h must be 1..{MAX_XMSS_H}")
         s.master=master or os.urandom(32); s.h=h; L=1<<h; s.next=0
         s.leaves=[]
         for k in range(L):
@@ -69,12 +72,31 @@ class XmssKey:
     def sign(s, mh):
         if s.next>=(1<<s.h): raise RuntimeError("out of one-time signatures (need a new address / larger h)")
         k=s.next; s.next+=1
+        return s.sign_at(k, mh)
+    def sign_at(s, k, mh):
+        """Sign with leaf k. The caller guarantees k is never used twice (see bgcfl_wallet)."""
+        if not 0<=k<(1<<s.h): raise RuntimeError("out of one-time signatures (need a new address / larger h)")
         sk,_=wots_keygen(H(s.master+k.to_bytes(4,"big")))
         return {"i":k,"w":[x.hex() for x in wots_sign(sk,mh)],"p":[x.hex() for x in auth_path(s.levels,k)]}
+
+def _hex32(x):
+    """Strict lowercase 64-hex -> 32 bytes, or None (no spaces/uppercase: one encoding per value)."""
+    if type(x) is not str or len(x)!=64: return None
+    try: b=bytes.fromhex(x)
+    except ValueError: return None
+    return b if b.hex()==x else None
+
 def xmss_verify(root, mh, sig):
-    pk=wots_pk_from_sig([bytes.fromhex(x) for x in sig["w"]], mh)
-    leaf=wots_pk_hash(pk)
-    return root_from(leaf, sig["i"], [bytes.fromhex(x) for x in sig["p"]])==root
+    """True only for a well-formed, valid signature. Never raises on hostile input."""
+    if type(root) is not bytes or len(root)!=32 or type(mh) is not bytes or len(mh)!=32: return False
+    if type(sig) is not dict: return False
+    i=sig.get("i"); w=sig.get("w"); p=sig.get("p")
+    if type(i) is not int or type(w) is not list or type(p) is not list: return False
+    if len(w)!=LEN or not 1<=len(p)<=MAX_XMSS_H or not 0<=i<(1<<len(p)): return False
+    wb=[_hex32(x) for x in w]; pb=[_hex32(x) for x in p]
+    if None in wb or None in pb: return False
+    leaf=wots_pk_hash(wots_pk_from_sig(wb, mh))
+    return root_from(leaf, i, pb)==root
 
 # ---------------- BGC economics (unchanged); signatures = XMSS ----------------
 COIN=100_000_000; MAX_SUPPLY=21_000_000*COIN

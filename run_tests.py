@@ -10,7 +10,9 @@ import os, sys, subprocess, time
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 FAST = [
-    ("bgcfl_demo2.py",           "Fair-launch PoW: retarget + coinbase maturity + chainwork reorg + no premine"),
+    ("test_bgc.py",              "Regression tests: consensus, wallet, P2P, wallet web API"),
+    ("bgcfl_demo.py",            "Fair launch: no premine, permissionless mining, anti-inflation, reorg, PQ spend"),
+    ("bgcfl_demo2.py",          "Fair-launch PoW: retarget + coinbase maturity + chainwork reorg + no premine"),
     ("bgc_job.py",               "HTLC escrow for AI/robot job settlement (quantum-safe)"),
     ("bgc_trao_doi.py",          "Two-party transfer: sign, confirm, fraud attempts rejected"),
     ("demo_2017_nha_giau_thua.py","Rich faction (more hashrate + rule change) rejected by user nodes"),

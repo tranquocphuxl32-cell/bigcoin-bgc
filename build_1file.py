@@ -14,7 +14,8 @@ HEADER = '''#!/usr/bin/env python3
 #          python BGC_Miner_1file.py --peers IP:9333 (tham gia mang, chuyen qua lai)
 #  (Dong goi .exe:  pyinstaller --onefile --name BGC-Miner BGC_Miner_1file.py)
 # =====================================================================
-import hashlib, hmac, struct, json, subprocess, os, time, sys, socket, threading, argparse, functools, webbrowser, io, base64, math
+import hashlib, hmac, struct, json, subprocess, os, time, sys, socket, threading, argparse, functools, webbrowser, io, base64, math, re, secrets
+from decimal import Decimal, InvalidOperation
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 try:
     import qrcode, qrcode.image.svg
@@ -44,13 +45,14 @@ def strip(mod, src):
     body="\n".join(out)
     # sua tham chieu cheo
     body=body.replace("bgcfl_genesis.build()","build()")
-    body=body.replace("R.MinerNode","MinerNode").replace("R.load_genesis","load_genesis")
+    for name in ("MinerNode","load_genesis","parse_peers","start_reconnector"):
+        body=body.replace("R."+name, name)
     return body.strip("\n")
 
 parts=[HEADER]
 for mod in ORDER:
-    src=open(mod+".py").read()
+    with open(mod+".py",encoding="utf-8") as f: src=f.read()
     parts.append(f"\n# ================= {mod} =================\n"+strip(mod,src))
 parts.append('\nif __name__=="__main__": sys.exit(main())\n')
-open("BGC_Miner_1file.py","w").write("\n".join(parts))
+with open("BGC_Miner_1file.py","w",encoding="utf-8") as f: f.write("\n".join(parts))
 print("BGC_Miner_1file.py da tao:", sum(len(p) for p in parts), "ky tu")

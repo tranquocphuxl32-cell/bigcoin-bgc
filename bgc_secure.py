@@ -28,8 +28,8 @@ def _block(key,nonce,cnt):
 def _xor(key,nonce,data,start=1):
     out=bytearray()
     for i in range((len(data)+63)//64):
-        ks=_block(key,nonce,start+i)
-        for j,b in enumerate(data[64*i:64*i+64]): out.append(b^ks[j])
+        chunk=data[64*i:64*i+64]; ks=_block(key,nonce,start+i)[:len(chunk)]
+        out+=(int.from_bytes(chunk,"little")^int.from_bytes(ks,"little")).to_bytes(len(chunk),"little")
     return bytes(out)
 def _poly(key,msg):
     r=int.from_bytes(key[:16],"little")&0x0ffffffc0ffffffc0ffffffc0fffffff; sx=int.from_bytes(key[16:],"little")
@@ -53,25 +53,34 @@ def _hkdf(salt,ikm,info,L=64):
     while len(out)<L: t=hmac.new(prk,t+info+bytes([i]),hashlib.sha256).digest(); out+=t; i+=1
     return out[:L]
 
+MAX_FRAME=16*1024*1024        # largest encrypted message accepted (blocks are <= 2 MB)
+HANDSHAKE_TIMEOUT=10          # seconds to complete the key exchange
+IDLE_TIMEOUT=120              # drop a peer that sends nothing for this long
+
 def _recvn(sock,n):
-    b=b""
-    while len(b)<n:
-        r=sock.recv(n-len(b))
+    b=bytearray(n); view=memoryview(b); got=0
+    while got<n:
+        r=sock.recv_into(view[got:], n-got)
         if not r: raise ConnectionError("dong")
-        b+=r
-    return b
+        got+=r
+    return bytes(b)
 
 class SecureSocket:
     """Boc socket: bat tay ECDH epheral -> 2 khoa huong (gui/nhan). Khung: [4 byte len][ct+tag]."""
     def __init__(s, sock, initiator):
         s.sock=sock; s.sn=0; s.rn=0; s._slock=threading.Lock()
+        sock.settimeout(HANDSHAKE_TIMEOUT)
         d=newkey(); Pt=pmul(d)
         mypub=(b"\x02" if Pt[1]%2==0 else b"\x03")+Pt[0].to_bytes(32,"big")
         sock.sendall(mypub)
         theirs=_recvn(sock,33)
-        x=int.from_bytes(theirs[1:],"big"); y=pow((pow(x,3,P)+7)%P,(P+1)//4,P)
+        x=int.from_bytes(theirs[1:],"big")
+        if theirs[0] not in (2,3) or x>=P: raise ConnectionError("bad handshake key")
+        y=pow((pow(x,3,P)+7)%P,(P+1)//4,P)
+        if (y*y-(pow(x,3,P)+7))%P!=0: raise ConnectionError("handshake key is not on secp256k1")
         if y%2!=(0 if theirs[0]==2 else 1): y=P-y
         shared=pmul(d,(x,y))[0].to_bytes(32,"big")
+        sock.settimeout(IDLE_TIMEOUT)
         # khoa doi xung: sap xep pub theo thu tu co dinh de 2 ben ra cung khoa
         a,b=(mypub,theirs) if initiator else (theirs,mypub)
         k=_hkdf(b"BGC-v2-transport", shared, a+b, 64)
@@ -79,11 +88,13 @@ class SecureSocket:
         s.ks, s.kr = (k[:32],k[32:]) if initiator else (k[32:],k[:32])
     def _nonce(s,n): return b"\x00"*4+n.to_bytes(8,"little")
     def send(s, data:bytes):
-        with s._slock:                                   # 1 luong 1 luc: tranh dua nonce + ghi xen ke
+        if len(data)>MAX_FRAME: raise ValueError("message too large")
+        with s._slock:                                  # 1 luong 1 luc: tranh dua nonce + ghi xen ke
             ct=aead_enc(s.ks, s._nonce(s.sn), b"", data); s.sn+=1
             s.sock.sendall(struct.pack("<I",len(ct))+ct)
     def recv(s)->bytes:
         ln=struct.unpack("<I",_recvn(s.sock,4))[0]
+        if ln<16 or ln>MAX_FRAME+16: raise ConnectionError("frame size out of range")
         pt=aead_dec(s.kr, s._nonce(s.rn), b"", _recvn(s.sock,ln)); s.rn+=1
         if pt is None: raise ConnectionError("MAC sai - ban tin bi sua")
         return pt

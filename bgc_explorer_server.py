@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 # =====================================================================
 #  BGC EXPLORER SERVER - website cho NGUOI DUNG xem chuoi BGC (fair-launch) qua URL.
-#  Dung: python bgc_explorer_server.py <datadir> [port]
-#  Doc chuoi tu datadir (bgcfl), render HTML tu dong lam moi -> cong dong "thay" mang.
+#  Dung: python bgc_explorer_server.py <datadir> [port] [--regtest]
+#  Doc chuoi tu datadir cua node dang chay (chi doc them khoi moi moi 10s, khong nap lai
+#  ca chuoi), render HTML tu dong lam moi -> cong dong "thay" mang.
 # =====================================================================
 import os, sys, html, time, threading
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from bgcfl_engine import Chain, COIN, MAX_SUPPLY, subsidy
+from bgcfl_engine import Chain, COIN, MAIN, REGTEST
 
 MSG="BGC: dong tien hau luong tu, sinh ra cho ky nguyen AI va robot."
+CHAIN=None; PAGE=b""
 
 def render(chain):
-    h=chain.height(); supply=chain.audit_supply()
-    bal={}
-    for v,a,_ in chain.utxo.values(): bal[a]=bal.get(a,0)+v
+    h=chain.height(); supply=chain.audit_supply(); MAX_SUPPLY=chain.p.max_supply()
+    def subsidy(x): return chain.p.subsidy(x)
+    bal=chain.balances()
     top="".join(f"<tr><td><code>{html.escape(a[:34])}…</code></td><td class=r>{v/COIN:,.2f}</td></tr>"
                 for a,v in sorted(bal.items(),key=lambda x:-x[1])[:12])
     rows=[]
@@ -55,21 +57,30 @@ code{{background:rgba(120,140,170,.18);padding:1px 5px;border-radius:5px;font-si
 <p class=sub>Du lieu doc truc tiep tu chuoi; ai cung chay node + explorer de TU KIEM. Khong co premine.</p>
 </body></html>"""
 
+def refresher():
+    global PAGE
+    while True:
+        try:
+            CHAIN.load()                              # chi doc cac khoi moi them vao file
+            PAGE=render(CHAIN).encode()
+        except Exception as e:
+            print("[explorer] loi doc chuoi:", e)
+        time.sleep(10)
+
 class H(BaseHTTPRequestHandler):
     def do_GET(s):
-        try:
-            ch=Chain(datadir=DATADIR); ch.load()
-            page=render(ch).encode()
-            s.send_response(200); s.send_header("Content-Type","text/html; charset=utf-8")
-            s.send_header("Content-Length",str(len(page))); s.end_headers(); s.wfile.write(page)
-        except Exception as e:
-            s.send_response(500); s.end_headers(); s.wfile.write(str(e).encode())
+        page=PAGE or b"dang nap chuoi..."
+        s.send_response(200); s.send_header("Content-Type","text/html; charset=utf-8")
+        s.send_header("Content-Length",str(len(page))); s.end_headers(); s.wfile.write(page)
     def log_message(s,*a): pass
 
 def main():
-    global DATADIR
-    DATADIR=sys.argv[1] if len(sys.argv)>1 else "bgcfl_data"
-    port=int(sys.argv[2]) if len(sys.argv)>2 else 8800
+    global CHAIN
+    args=[a for a in sys.argv[1:] if a!="--regtest"]
+    DATADIR=args[0] if args else "bgcfl_data"
+    port=int(args[1]) if len(args)>1 else 8800
+    CHAIN=Chain(datadir=DATADIR, params=REGTEST if "--regtest" in sys.argv else MAIN)
+    threading.Thread(target=refresher, daemon=True).start()
     srv=ThreadingHTTPServer(("0.0.0.0",port),H)
     print(f"[explorer] phuc vu tai http://0.0.0.0:{port}  (doc datadir: {DATADIR})")
     print(f"[explorer] mo tren trinh duyet; lien may: thay 0.0.0.0 bang IP may chu.")

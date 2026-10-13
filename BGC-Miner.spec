@@ -8,8 +8,8 @@ a = Analysis(
     ['bgc_app.py'],
     pathex=[os.getcwd()],
     binaries=[],
-    # genesis-Datei mit einbuendeln (Fallback; die App erzeugt sie sonst deterministisch)
-    datas=[('bgcfl_genesis.json', '.')],
+    # der Genesis-Block ist im Code fest eingebaut (bgcfl_engine.make_genesis) -> keine Datei noetig
+    datas=[],
     # Module, die nur dynamisch importiert werden -> explizit angeben
     hiddenimports=['bigcoin_pq','bgcfl_engine','bgcfl_wallet','bgc_secure','run_miner','bgcfl_genesis',
                    'qrcode','qrcode.image.svg'],
